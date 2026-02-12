@@ -1,0 +1,563 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAZEY — Elite FiveM Development</title>
+    <link rel="stylesheet" href="style.css">
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800;900&family=Space+Grotesk:wght@400;500;600;700&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+</head>
+<body>
+    <!-- Particle Canvas -->
+    <canvas id="particles"></canvas>
+
+    <!-- Custom Cursor -->
+    <div class="cursor-glow" id="cursorGlow"></div>
+
+    <!-- Navigation -->
+    <nav class="navbar" id="navbar">
+        <div class="nav-container">
+            <a href="#" class="nav-logo">
+                <span class="logo-icon">
+                    <svg width="32" height="32" viewBox="0 0 32 32" fill="none">
+                        <path d="M16 2L28 8V24L16 30L4 24V8L16 2Z" stroke="url(#logoGrad)" stroke-width="2" fill="none"/>
+                        <path d="M16 8L22 11V21L16 24L10 21V11L16 8Z" fill="url(#logoGrad)" opacity="0.3"/>
+                        <path d="M16 12L19 13.5V18.5L16 20L13 18.5V13.5L16 12Z" fill="url(#logoGrad)"/>
+                        <defs>
+                            <linearGradient id="logoGrad" x1="4" y1="2" x2="28" y2="30">
+                                <stop offset="0%" stop-color="#FF6B35"/>
+                                <stop offset="100%" stop-color="#FF3366"/>
+                            </linearGradient>
+                        </defs>
+                    </svg>
+                </span>
+                <span class="logo-text">JAZEY</span>
+                <span class="logo-badge">DEV</span>
+            </a>
+            <div class="nav-links" id="navLinks">
+                <a href="#home" class="nav-link active">Home</a>
+                <a href="#services" class="nav-link">Services</a>
+                <a href="#work" class="nav-link">Work</a>
+                <a href="#about" class="nav-link">About</a>
+                <a href="#testimonials" class="nav-link">Reviews</a>
+                <a href="#contact" class="nav-link nav-link-cta">Get Started</a>
+            </div>
+            <button class="nav-toggle" id="navToggle">
+                <span></span><span></span><span></span>
+            </button>
+        </div>
+    </nav>
+
+    <!-- Hero Section -->
+    <section class="hero" id="home">
+        <div class="hero-bg-effects">
+            <div class="hero-orb hero-orb-1"></div>
+            <div class="hero-orb hero-orb-2"></div>
+            <div class="hero-orb hero-orb-3"></div>
+            <div class="hero-grid"></div>
+        </div>
+        <div class="hero-content">
+            <div class="hero-badge animate-in">
+                <span class="badge-dot"></span>
+                Available for new projects
+            </div>
+            <h1 class="hero-title animate-in">
+                <span class="title-line">Elite <span class="gradient-text">FiveM</span></span>
+                <span class="title-line">Development</span>
+            </h1>
+            <p class="hero-subtitle animate-in">
+                Custom-built FiveM servers, advanced scripting, and high-performance systems 
+                designed to elevate your community. We create optimized, scalable, and immersive 
+                servers that stand out.
+            </p>
+            <div class="hero-tagline animate-in">
+                "Built for Performance. Designed for Roleplay."
+            </div>
+            <div class="hero-buttons animate-in">
+                <a href="#work" class="btn btn-primary">
+                    <span>View Our Work</span>
+                    <i class="fas fa-arrow-right"></i>
+                </a>
+                <a href="#contact" class="btn btn-secondary">
+                    <span>Get Started</span>
+                    <i class="fas fa-rocket"></i>
+                </a>
+            </div>
+            <div class="hero-stats animate-in">
+                <div class="stat">
+                    <span class="stat-number" data-target="150">0</span><span class="stat-plus">+</span>
+                    <span class="stat-label">Projects Delivered</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-number" data-target="50">0</span><span class="stat-plus">+</span>
+                    <span class="stat-label">Happy Clients</span>
+                </div>
+                <div class="stat-divider"></div>
+                <div class="stat">
+                    <span class="stat-number" data-target="99">0</span><span class="stat-plus">%</span>
+                    <span class="stat-label">Satisfaction</span>
+                </div>
+            </div>
+        </div>
+        <div class="scroll-indicator">
+            <div class="scroll-line"></div>
+            <span>Scroll</span>
+        </div>
+    </section>
+
+    <!-- Marquee -->
+    <div class="marquee-section">
+        <div class="marquee-track">
+            <div class="marquee-content">
+                <span>CUSTOM SCRIPTS</span><span class="marquee-dot"></span>
+                <span>QBCORE</span><span class="marquee-dot"></span>
+                <span>ESX FRAMEWORK</span><span class="marquee-dot"></span>
+                <span>UI DESIGN</span><span class="marquee-dot"></span>
+                <span>PERFORMANCE</span><span class="marquee-dot"></span>
+                <span>SERVER BUILDS</span><span class="marquee-dot"></span>
+                <span>OPTIMIZATION</span><span class="marquee-dot"></span>
+                <span>LUA SCRIPTING</span><span class="marquee-dot"></span>
+                <span>CUSTOM SCRIPTS</span><span class="marquee-dot"></span>
+                <span>QBCORE</span><span class="marquee-dot"></span>
+                <span>ESX FRAMEWORK</span><span class="marquee-dot"></span>
+                <span>UI DESIGN</span><span class="marquee-dot"></span>
+                <span>PERFORMANCE</span><span class="marquee-dot"></span>
+                <span>SERVER BUILDS</span><span class="marquee-dot"></span>
+                <span>OPTIMIZATION</span><span class="marquee-dot"></span>
+                <span>LUA SCRIPTING</span><span class="marquee-dot"></span>
+            </div>
+        </div>
+    </div>
+
+    <!-- Services Section -->
+    <section class="services" id="services">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag animate-on-scroll">What We Do</span>
+                <h2 class="section-title animate-on-scroll">
+                    Next-Level <span class="gradient-text">FiveM</span> Services
+                </h2>
+                <p class="section-subtitle animate-on-scroll">
+                    From QBCore & ESX frameworks to fully custom systems — we deliver solutions that perform.
+                </p>
+            </div>
+            <div class="services-grid">
+                <div class="service-card animate-on-scroll" data-delay="0">
+                    <div class="service-icon">
+                        <i class="fas fa-code"></i>
+                    </div>
+                    <div class="service-number">01</div>
+                    <h3>Custom Scripting</h3>
+                    <p>Advanced Lua scripts built from scratch. Clean code, optimized performance, zero resmon issues.</p>
+                    <div class="service-tags">
+                        <span>Lua</span><span>JS</span><span>SQL</span>
+                    </div>
+                </div>
+                <div class="service-card animate-on-scroll" data-delay="100">
+                    <div class="service-icon">
+                        <i class="fas fa-server"></i>
+                    </div>
+                    <div class="service-number">02</div>
+                    <h3>Full Server Builds</h3>
+                    <p>Complete server setups from the ground up. Framework installation, configuration, custom resources.</p>
+                    <div class="service-tags">
+                        <span>QBCore</span><span>ESX</span><span>Custom</span>
+                    </div>
+                </div>
+                <div class="service-card animate-on-scroll" data-delay="200">
+                    <div class="service-icon">
+                        <i class="fas fa-bolt"></i>
+                    </div>
+                    <div class="service-number">03</div>
+                    <h3>Performance Optimization</h3>
+                    <p>Server running slow? We diagnose, fix, and optimize your resources for buttery smooth gameplay.</p>
+                    <div class="service-tags">
+                        <span>Resmon</span><span>Debug</span><span>Optimize</span>
+                    </div>
+                </div>
+                <div class="service-card animate-on-scroll" data-delay="300">
+                    <div class="service-icon">
+                        <i class="fas fa-palette"></i>
+                    </div>
+                    <div class="service-number">04</div>
+                    <h3>UI/UX Design</h3>
+                    <p>Stunning in-game interfaces. HUDs, phone systems, inventories, and more — all pixel-perfect.</p>
+                    <div class="service-tags">
+                        <span>HTML</span><span>CSS</span><span>React</span>
+                    </div>
+                </div>
+                <div class="service-card animate-on-scroll" data-delay="400">
+                    <div class="service-icon">
+                        <i class="fas fa-shield-halved"></i>
+                    </div>
+                    <div class="service-number">05</div>
+                    <h3>Anti-Cheat & Security</h3>
+                    <p>Protect your server with custom anti-cheat solutions and secure server-side implementations.</p>
+                    <div class="service-tags">
+                        <span>Security</span><span>Server-Side</span>
+                    </div>
+                </div>
+                <div class="service-card animate-on-scroll" data-delay="500">
+                    <div class="service-icon">
+                        <i class="fas fa-headset"></i>
+                    </div>
+                    <div class="service-number">06</div>
+                    <h3>Ongoing Support</h3>
+                    <p>We don't just build and leave. Get dedicated support, updates, and maintenance for your server.</p>
+                    <div class="service-tags">
+                        <span>24/7</span><span>Updates</span><span>Fixes</span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Work / Portfolio Section -->
+    <section class="work" id="work">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag animate-on-scroll">Portfolio</span>
+                <h2 class="section-title animate-on-scroll">
+                    Our <span class="gradient-text">Featured</span> Work
+                </h2>
+                <p class="section-subtitle animate-on-scroll">
+                    Real projects. Real results. See what we've built for communities like yours.
+                </p>
+            </div>
+            <div class="work-grid">
+                <div class="work-card work-card-large animate-on-scroll">
+                    <div class="work-card-bg" style="background: linear-gradient(135deg, #FF6B35 0%, #FF3366 100%);">
+                        <div class="work-card-pattern"></div>
+                    </div>
+                    <div class="work-card-content">
+                        <span class="work-tag">Full Server Build</span>
+                        <h3>Horizon Roleplay</h3>
+                        <p>Complete QBCore server with 200+ custom scripts, custom UI, and optimized for 200 players.</p>
+                        <div class="work-tech">
+                            <span>QBCore</span><span>Lua</span><span>React</span><span>MySQL</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="work-card animate-on-scroll" data-delay="100">
+                    <div class="work-card-bg" style="background: linear-gradient(135deg, #6366f1 0%, #8b5cf6 100%);">
+                        <div class="work-card-pattern"></div>
+                    </div>
+                    <div class="work-card-content">
+                        <span class="work-tag">Custom Script</span>
+                        <h3>Advanced Heist System</h3>
+                        <p>Multi-stage heist system with hacking minigames and dynamic police alerts.</p>
+                        <div class="work-tech">
+                            <span>Lua</span><span>JS</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="work-card animate-on-scroll" data-delay="200">
+                    <div class="work-card-bg" style="background: linear-gradient(135deg, #06b6d4 0%, #3b82f6 100%);">
+                        <div class="work-card-pattern"></div>
+                    </div>
+                    <div class="work-card-content">
+                        <span class="work-tag">UI Design</span>
+                        <h3>Custom Phone System</h3>
+                        <p>iOS-style phone with real-time messaging, banking, and social media apps.</p>
+                        <div class="work-tech">
+                            <span>React</span><span>CSS</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="work-card animate-on-scroll" data-delay="100">
+                    <div class="work-card-bg" style="background: linear-gradient(135deg, #f59e0b 0%, #ef4444 100%);">
+                        <div class="work-card-pattern"></div>
+                    </div>
+                    <div class="work-card-content">
+                        <span class="work-tag">Optimization</span>
+                        <h3>Eclipse RP Overhaul</h3>
+                        <p>Reduced server resmon by 60%. Went from 32 to 180 max players.</p>
+                        <div class="work-tech">
+                            <span>Performance</span><span>Debug</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="work-card animate-on-scroll" data-delay="200">
+                    <div class="work-card-bg" style="background: linear-gradient(135deg, #10b981 0%, #059669 100%);">
+                        <div class="work-card-pattern"></div>
+                    </div>
+                    <div class="work-card-content">
+                        <span class="work-tag">Custom Framework</span>
+                        <h3>Custom MDT System</h3>
+                        <p>Full police MDT with records, BOLO, warrants, and dispatch integration.</p>
+                        <div class="work-tech">
+                            <span>React</span><span>Lua</span><span>SQL</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- About Section -->
+    <section class="about" id="about">
+        <div class="container">
+            <div class="about-grid">
+                <div class="about-content animate-on-scroll">
+                    <span class="section-tag">Who We Are</span>
+                    <h2 class="section-title">
+                        Serious Development for <span class="gradient-text">Serious</span> Communities
+                    </h2>
+                    <p class="about-text">
+                        We're not just developers — we're FiveM veterans who understand what makes a server succeed. 
+                        Every line of code we write is optimized, every system we build is scalable, and every 
+                        project we deliver exceeds expectations.
+                    </p>
+                    <p class="about-text">
+                        From small startups to established communities with hundreds of players, we've helped 
+                        servers of all sizes reach their full potential.
+                    </p>
+                    <div class="about-features">
+                        <div class="about-feature">
+                            <div class="feature-icon"><i class="fas fa-check"></i></div>
+                            <span>Clean, Optimized Code</span>
+                        </div>
+                        <div class="about-feature">
+                            <div class="feature-icon"><i class="fas fa-check"></i></div>
+                            <span>Fast Delivery Times</span>
+                        </div>
+                        <div class="about-feature">
+                            <div class="feature-icon"><i class="fas fa-check"></i></div>
+                            <span>Dedicated Support</span>
+                        </div>
+                        <div class="about-feature">
+                            <div class="feature-icon"><i class="fas fa-check"></i></div>
+                            <span>100% Custom Solutions</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="about-visual animate-on-scroll" data-delay="200">
+                    <div class="code-window">
+                        <div class="code-header">
+                            <div class="code-dots">
+                                <span></span><span></span><span></span>
+                            </div>
+                            <span class="code-filename">jazey_core/server.lua</span>
+                        </div>
+                        <div class="code-body">
+                            <pre><code><span class="code-keyword">local</span> <span class="code-var">JAZEY</span> = {}
+
+<span class="code-comment">-- Elite FiveM Development</span>
+<span class="code-keyword">function</span> <span class="code-func">JAZEY.Init</span>(<span class="code-param">config</span>)
+    <span class="code-var">config</span>.performance = <span class="code-string">"optimized"</span>
+    <span class="code-var">config</span>.quality = <span class="code-string">"premium"</span>
+    <span class="code-var">config</span>.support = <span class="code-bool">true</span>
+    
+    <span class="code-keyword">return</span> <span class="code-func">CreateServer</span>({
+        framework = <span class="code-var">config</span>.framework,
+        scripts = <span class="code-func">LoadCustom</span>(),
+        antiCheat = <span class="code-bool">true</span>,
+        maxPlayers = <span class="code-num">256</span>
+    })
+<span class="code-keyword">end</span>
+
+<span class="code-comment">-- Custom Code. Clean Systems.</span>
+<span class="code-comment">-- Real Results. 🔥</span></code></pre>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Testimonials Section -->
+    <section class="testimonials" id="testimonials">
+        <div class="container">
+            <div class="section-header">
+                <span class="section-tag animate-on-scroll">Testimonials</span>
+                <h2 class="section-title animate-on-scroll">
+                    Trusted by <span class="gradient-text">Growing</span> Communities
+                </h2>
+            </div>
+            <div class="testimonials-grid">
+                <div class="testimonial-card animate-on-scroll">
+                    <div class="testimonial-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p>"Jazey completely transformed our server. Went from 20 players to 150+ daily. The custom scripts are insane quality."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">M</div>
+                        <div>
+                            <strong>Mike R.</strong>
+                            <span>Horizon Roleplay</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card animate-on-scroll" data-delay="100">
+                    <div class="testimonial-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p>"Best FiveM developer I've worked with. Fast, professional, and the code quality is top tier. Highly recommend."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">S</div>
+                        <div>
+                            <strong>Sarah K.</strong>
+                            <span>Eclipse RP</span>
+                        </div>
+                    </div>
+                </div>
+                <div class="testimonial-card animate-on-scroll" data-delay="200">
+                    <div class="testimonial-stars">
+                        <i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i><i class="fas fa-star"></i>
+                    </div>
+                    <p>"Our custom MDT and phone system are absolutely fire. Players love it and our staff loves how easy it is to manage."</p>
+                    <div class="testimonial-author">
+                        <div class="author-avatar">D</div>
+                        <div>
+                            <strong>David L.</strong>
+                            <span>Nexus Gaming</span>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- CTA Section -->
+    <section class="cta-section">
+        <div class="container">
+            <div class="cta-box animate-on-scroll">
+                <div class="cta-bg-effects">
+                    <div class="cta-orb cta-orb-1"></div>
+                    <div class="cta-orb cta-orb-2"></div>
+                </div>
+                <h2>Ready to Build Something <span class="gradient-text">Legendary</span>?</h2>
+                <p>Turning ideas into legendary servers. Let's talk about your project and make it happen.</p>
+                <div class="cta-buttons">
+                    <a href="#contact" class="btn btn-primary btn-large">
+                        <span>Start Your Project</span>
+                        <i class="fas fa-arrow-right"></i>
+                    </a>
+                    <a href="#contact" class="btn btn-ghost btn-large">
+                        <span>Request a Quote</span>
+                    </a>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Contact Section -->
+    <section class="contact" id="contact">
+        <div class="container">
+            <div class="contact-grid">
+                <div class="contact-info animate-on-scroll">
+                    <span class="section-tag">Contact</span>
+                    <h2 class="section-title">
+                        Let's <span class="gradient-text">Connect</span>
+                    </h2>
+                    <p>Ready to elevate your FiveM server? Drop us a message and let's discuss your vision.</p>
+                    <div class="contact-methods">
+                        <a href="#" class="contact-method">
+                            <div class="contact-method-icon"><i class="fab fa-discord"></i></div>
+                            <div>
+                                <strong>Discord</strong>
+                                <span>Join our server</span>
+                            </div>
+                        </a>
+                        <a href="#" class="contact-method">
+                            <div class="contact-method-icon"><i class="fas fa-envelope"></i></div>
+                            <div>
+                                <strong>Email</strong>
+                                <span>contact@jazey.dev</span>
+                            </div>
+                        </a>
+                    </div>
+                </div>
+                <div class="contact-form-wrapper animate-on-scroll" data-delay="200">
+                    <form class="contact-form" id="contactForm">
+                        <div class="form-group">
+                            <input type="text" id="name" required placeholder=" ">
+                            <label for="name">Your Name</label>
+                        </div>
+                        <div class="form-group">
+                            <input type="text" id="discord" required placeholder=" ">
+                            <label for="discord">Discord Tag</label>
+                        </div>
+                        <div class="form-group">
+                            <select id="service" required>
+                                <option value="" disabled selected>Select a Service</option>
+                                <option value="server-build">Full Server Build</option>
+                                <option value="custom-script">Custom Script</option>
+                                <option value="ui-design">UI/UX Design</option>
+                                <option value="optimization">Performance Optimization</option>
+                                <option value="security">Anti-Cheat & Security</option>
+                                <option value="other">Other</option>
+                            </select>
+                        </div>
+                        <div class="form-group">
+                            <textarea id="message" rows="4" required placeholder=" "></textarea>
+                            <label for="message">Tell us about your project</label>
+                        </div>
+                        <button type="submit" class="btn btn-primary btn-full">
+                            <span>Send Message</span>
+                            <i class="fas fa-paper-plane"></i>
+                        </button>
+                    </form>
+                </div>
+            </div>
+        </div>
+    </section>
+
+    <!-- Footer -->
+    <footer class="footer">
+        <div class="container">
+            <div class="footer-top">
+                <div class="footer-brand">
+                    <a href="#" class="nav-logo">
+                        <span class="logo-icon">
+                            <svg width="28" height="28" viewBox="0 0 32 32" fill="none">
+                                <path d="M16 2L28 8V24L16 30L4 24V8L16 2Z" stroke="url(#logoGrad2)" stroke-width="2" fill="none"/>
+                                <path d="M16 8L22 11V21L16 24L10 21V11L16 8Z" fill="url(#logoGrad2)" opacity="0.3"/>
+                                <path d="M16 12L19 13.5V18.5L16 20L13 18.5V13.5L16 12Z" fill="url(#logoGrad2)"/>
+                                <defs>
+                                    <linearGradient id="logoGrad2" x1="4" y1="2" x2="28" y2="30">
+                                        <stop offset="0%" stop-color="#FF6B35"/>
+                                        <stop offset="100%" stop-color="#FF3366"/>
+                                    </linearGradient>
+                                </defs>
+                            </svg>
+                        </span>
+                        <span class="logo-text">JAZEY</span>
+                    </a>
+                    <p>Custom Code. Clean Systems. Real Results.</p>
+                </div>
+                <div class="footer-links">
+                    <div class="footer-col">
+                        <h4>Navigation</h4>
+                        <a href="#home">Home</a>
+                        <a href="#services">Services</a>
+                        <a href="#work">Portfolio</a>
+                        <a href="#contact">Contact</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Services</h4>
+                        <a href="#services">Custom Scripts</a>
+                        <a href="#services">Server Builds</a>
+                        <a href="#services">UI Design</a>
+                        <a href="#services">Optimization</a>
+                    </div>
+                    <div class="footer-col">
+                        <h4>Connect</h4>
+                        <a href="#"><i class="fab fa-discord"></i> Discord</a>
+                        <a href="#"><i class="fab fa-github"></i> GitHub</a>
+                        <a href="#"><i class="fab fa-twitter"></i> Twitter</a>
+                    </div>
+                </div>
+            </div>
+            <div class="footer-bottom">
+                <p>&copy; 2026 Jazey Development. All rights reserved.</p>
+                <p>Turning Ideas Into Legendary Servers.</p>
+            </div>
+        </div>
+    </footer>
+
+    <script src="script.js"></script>
+</body>
+</html>
