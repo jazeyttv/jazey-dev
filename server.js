@@ -99,7 +99,7 @@ app.post('/api/contact', contactLimiter, (req, res) => {
 
         console.log(`  [NEW] #${entry.id} — ${clean.name} (${clean.discord}) — ${serviceNames[clean.service] || clean.service}`);
 
-        res.json({ success: true, message: 'Your message has been sent! We\'ll get back to you soon.' });
+        res.json({ success: true, ticketId: entry.id, message: 'Your message has been sent! We\'ll get back to you soon.' });
     } catch (err) {
         console.error('  [ERROR]', err);
         res.status(500).json({ success: false, error: 'Something went wrong. Please try again.' });
@@ -126,6 +126,29 @@ app.get('/api/blog', (req, res) => {
         res.json({ success: true, posts });
     } catch (err) {
         res.status(500).json({ success: false, error: 'Failed to load posts.' });
+    }
+});
+
+// GET /api/ticket/:id — Public ticket status lookup
+app.get('/api/ticket/:id', (req, res) => {
+    try {
+        const sub = db.getSubmission(req.params.id);
+        if (!sub) {
+            return res.status(404).json({ success: false, error: 'Ticket not found. Please check your ticket number.' });
+        }
+        // Return only public-safe info (no message content, notes, discord, or IP)
+        res.json({
+            success: true,
+            ticket: {
+                id: sub.id,
+                name: sub.name,
+                service: serviceNames[sub.service] || sub.service,
+                status: sub.status,
+                created_at: sub.created_at
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to look up ticket.' });
     }
 });
 
@@ -334,6 +357,10 @@ async function sendEmailNotification(data, id) {
 // ── Serve Pages ───────────────────────────────
 app.get('/admin', (req, res) => {
     res.sendFile(path.join(__dirname, 'admin.html'));
+});
+
+app.get('/ticket', (req, res) => {
+    res.sendFile(path.join(__dirname, 'ticket.html'));
 });
 
 app.get('*', (req, res) => {

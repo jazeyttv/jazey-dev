@@ -421,10 +421,22 @@
                 const data = await response.json();
 
                 if (data.success) {
+                    const ticketId = data.ticketId;
                     btn.innerHTML = '<span>Message Sent!</span><i class="fas fa-check"></i>';
                     btn.style.background = 'linear-gradient(135deg, #10b981, #059669)';
-                    showNotification('Message sent! We\'ll get back to you soon.', 'success');
+                    showNotification(`Ticket #${ticketId} created! Track it at /ticket`, 'success');
                     contactForm.reset();
+
+                    // Show ticket ID banner above the form
+                    let banner = document.getElementById('ticketBanner');
+                    if (!banner) {
+                        banner = document.createElement('div');
+                        banner.id = 'ticketBanner';
+                        banner.style.cssText = 'background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:16px 20px;margin-bottom:20px;text-align:center;animation:fadeInUp 0.5s ease;';
+                        contactForm.parentElement.insertBefore(banner, contactForm);
+                    }
+                    banner.innerHTML = `<p style="color:#10b981;font-weight:600;margin-bottom:4px;">Your ticket number is <strong>#${ticketId}</strong></p><p style="color:var(--text-secondary);font-size:0.85rem;">Save this number! <a href="/ticket?id=${ticketId}" style="color:#FF6B35;text-decoration:underline;">Track your ticket here</a></p>`;
+
                     setTimeout(() => {
                         btn.innerHTML = originalContent;
                         btn.style.background = '';
