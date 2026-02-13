@@ -206,7 +206,7 @@
                         <li><i class="fas fa-check"></i> Setup Guide</li>
                     </ul>
                     <div class="pack-price">$15<span>.99</span> <em>one-time</em></div>
-                    <a href="#contact" class="pack-btn">Order Now <i class="fas fa-arrow-right"></i></a>
+                    <button class="pack-btn" onclick="launchInstaller('Starter Pack', 50, 'server-build')">Order Now <i class="fas fa-arrow-right"></i></button>
                 </div>
 
                 <!-- Pack 2: Advanced -->
@@ -227,7 +227,7 @@
                         <li><i class="fas fa-check"></i> Priority Support</li>
                     </ul>
                     <div class="pack-price">$39<span>.99</span> <em>one-time</em></div>
-                    <a href="#contact" class="pack-btn">Order Now <i class="fas fa-arrow-right"></i></a>
+                    <button class="pack-btn" onclick="launchInstaller('Advanced Pack', 120, 'server-build')">Order Now <i class="fas fa-arrow-right"></i></button>
                 </div>
 
                 <!-- Pack 3: All-in-One (Featured) -->
@@ -251,7 +251,7 @@
                         <li><i class="fas fa-check"></i> VIP Support</li>
                     </ul>
                     <div class="pack-price">$69<span>.99</span> <em>one-time</em></div>
-                    <a href="#contact" class="pack-btn pack-btn-featured">Order Now <i class="fas fa-arrow-right"></i></a>
+                    <button class="pack-btn pack-btn-featured" onclick="launchInstaller('All-in-One', 250, 'server-build')">Order Now <i class="fas fa-arrow-right"></i></button>
                 </div>
 
                 <!-- Pack 4: Custom Build -->
@@ -271,7 +271,7 @@
                         <li><i class="fas fa-check"></i> Lifetime Support</li>
                     </ul>
                     <div class="pack-price">$150<span>+</span> <em>quote</em></div>
-                    <a href="#contact" class="pack-btn">Get a Quote <i class="fas fa-arrow-right"></i></a>
+                    <button class="pack-btn" onclick="launchInstaller('Custom Build', 0, 'server-build')">Get a Quote <i class="fas fa-arrow-right"></i></button>
                 </div>
             </div>
             <div class="packs-note animate-on-scroll">
@@ -739,6 +739,224 @@
         </a>
     </div>
 
+    <!-- Pack Installer Overlay -->
+    <div id="packInstaller" style="display:none;position:fixed;inset:0;z-index:9999;background:rgba(0,0,0,0.75);backdrop-filter:blur(12px);align-items:center;justify-content:center;padding:20px;">
+        <div style="width:100%;max-width:720px;background:#0d0d18;border:1px solid rgba(108,99,255,0.25);border-radius:20px;overflow:hidden;box-shadow:0 40px 120px rgba(0,0,0,0.6);font-family:'Inter',sans-serif;">
+            <!-- Header -->
+            <div style="display:flex;align-items:center;justify-content:space-between;padding:18px 24px;background:linear-gradient(135deg,rgba(108,99,255,0.15),rgba(0,212,255,0.08));border-bottom:1px solid rgba(255,255,255,0.06);">
+                <div style="display:flex;align-items:center;gap:10px;">
+                    <div style="width:10px;height:10px;border-radius:50%;background:#6C63FF;animation:installerPulse 1.5s ease-in-out infinite;"></div>
+                    <span style="font-weight:700;font-size:0.95rem;color:#fff;">JAZEY <span id="installerPackName">Pack</span> Installer</span>
+                </div>
+                <div style="display:flex;gap:16px;align-items:center;">
+                    <span id="installerShowLog" style="color:#6C63FF;font-size:0.78rem;cursor:pointer;font-weight:600;" onclick="document.getElementById('installerLog').style.display=document.getElementById('installerLog').style.display==='none'?'block':'none'">Show Log</span>
+                    <span style="color:rgba(255,255,255,0.4);font-size:0.75rem;">v1.0.0</span>
+                </div>
+            </div>
+            <!-- Progress Bar -->
+            <div style="padding:16px 24px 8px;">
+                <div style="display:flex;justify-content:space-between;margin-bottom:8px;">
+                    <span style="font-size:0.82rem;font-weight:600;color:rgba(255,255,255,0.7);">Installation Progress</span>
+                    <span id="installerPercent" style="font-size:0.82rem;font-weight:700;color:#fff;">0%</span>
+                </div>
+                <div style="height:8px;background:rgba(255,255,255,0.06);border-radius:50px;overflow:hidden;">
+                    <div id="installerBar" style="height:100%;width:0%;background:linear-gradient(90deg,#6C63FF,#00D4FF);border-radius:50px;transition:width 0.4s ease;"></div>
+                </div>
+            </div>
+            <!-- Body -->
+            <div style="padding:24px;min-height:280px;">
+                <!-- Steps -->
+                <div id="installerSteps" style="display:none;justify-content:center;gap:40px;margin-bottom:28px;">
+                    <div class="inst-step" id="instStep0" style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+                        <div class="inst-dot" style="width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1rem;color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.03);transition:0.4s;"><i class="fas fa-download"></i></div>
+                        <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.4);transition:0.4s;">Download</span>
+                    </div>
+                    <div class="inst-step" id="instStep1" style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+                        <div class="inst-dot" style="width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1rem;color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.03);transition:0.4s;"><i class="fas fa-cog"></i></div>
+                        <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.4);transition:0.4s;">Extract</span>
+                    </div>
+                    <div class="inst-step" id="instStep2" style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+                        <div class="inst-dot" style="width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1rem;color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.03);transition:0.4s;"><i class="fas fa-server"></i></div>
+                        <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.4);transition:0.4s;">Configure</span>
+                    </div>
+                    <div class="inst-step" id="instStep3" style="display:flex;flex-direction:column;align-items:center;gap:8px;">
+                        <div class="inst-dot" style="width:48px;height:48px;border-radius:50%;border:2px solid rgba(255,255,255,0.1);display:flex;align-items:center;justify-content:center;font-size:1rem;color:rgba(255,255,255,0.3);background:rgba(255,255,255,0.03);transition:0.4s;"><i class="fas fa-check-circle"></i></div>
+                        <span style="font-size:0.72rem;font-weight:600;color:rgba(255,255,255,0.4);transition:0.4s;">Complete</span>
+                    </div>
+                </div>
+                <!-- Status text -->
+                <div id="installerStatus" style="text-align:center;">
+                    <h3 id="installerTitle" style="font-family:'Space Grotesk',sans-serif;font-size:1.3rem;font-weight:700;color:#00D4FF;margin-bottom:10px;">Ready to Install</h3>
+                    <p id="installerSubtitle" style="color:rgba(255,255,255,0.5);font-size:0.9rem;margin-bottom:28px;">This will prepare your server pack for order.</p>
+                    <button id="installerStartBtn" onclick="startInstallAnim()" style="display:inline-flex;align-items:center;gap:10px;padding:16px 36px;background:linear-gradient(135deg,#6C63FF,#00D4FF);border:none;border-radius:14px;color:#fff;font-weight:700;font-size:1rem;cursor:pointer;font-family:'Inter',sans-serif;transition:0.3s;">
+                        <i class="fas fa-download"></i> Start Installation
+                    </button>
+                </div>
+                <!-- Log (hidden) -->
+                <div id="installerLog" style="display:none;margin-top:16px;background:rgba(0,0,0,0.3);border:1px solid rgba(255,255,255,0.06);border-radius:10px;padding:14px;max-height:140px;overflow-y:auto;font-family:monospace;font-size:0.75rem;color:rgba(255,255,255,0.5);line-height:1.8;"></div>
+            </div>
+            <!-- Footer -->
+            <div style="display:flex;justify-content:space-between;padding:14px 24px;border-top:1px solid rgba(255,255,255,0.04);color:rgba(255,255,255,0.3);font-size:0.75rem;">
+                <span>JAZEY Auto-Installer</span>
+                <span id="installerFooterStatus">Ready to install</span>
+            </div>
+        </div>
+    </div>
+    <style>
+        @keyframes installerPulse { 0%,100%{opacity:1;} 50%{opacity:0.4;} }
+        #packInstaller .inst-dot.active { border-color:#6C63FF!important;background:rgba(108,99,255,0.15)!important;color:#6C63FF!important; }
+        #packInstaller .inst-dot.done { border-color:#10b981!important;background:rgba(16,185,129,0.15)!important;color:#10b981!important; }
+        #packInstaller .inst-step .active-label { color:#fff!important; }
+        #packInstaller .inst-step .done-label { color:#10b981!important; }
+    </style>
+    <script>
+        // ── Pack Installer Logic ──────────────
+        let installerPack = '';
+        let installerScripts = 0;
+        let installerService = 'server-build';
+
+        function launchInstaller(packName, scripts, service) {
+            installerPack = packName;
+            installerScripts = scripts;
+            installerService = service;
+            const el = document.getElementById('packInstaller');
+            el.style.display = 'flex';
+            document.body.style.overflow = 'hidden';
+            // Reset
+            document.getElementById('installerPackName').textContent = packName;
+            document.getElementById('installerPercent').textContent = '0%';
+            document.getElementById('installerBar').style.width = '0%';
+            document.getElementById('installerTitle').textContent = 'Ready to Install ' + packName;
+            document.getElementById('installerSubtitle').textContent = scripts > 0
+                ? 'This will install ' + scripts + ' mods and scripts to your FiveM server with just one click.'
+                : 'This will prepare your custom server build for order.';
+            document.getElementById('installerStartBtn').style.display = 'inline-flex';
+            document.getElementById('installerSteps').style.display = 'none';
+            document.getElementById('installerLog').style.display = 'none';
+            document.getElementById('installerLog').innerHTML = '';
+            document.getElementById('installerFooterStatus').textContent = 'Ready to install';
+            [0,1,2,3].forEach(i => {
+                const dot = document.querySelector('#instStep' + i + ' .inst-dot');
+                const label = document.querySelector('#instStep' + i + ' span:last-child');
+                dot.className = 'inst-dot';
+                label.className = '';
+            });
+        }
+
+        function closeInstaller() {
+            document.getElementById('packInstaller').style.display = 'none';
+            document.body.style.overflow = '';
+        }
+
+        document.getElementById('packInstaller').addEventListener('click', function(e) {
+            if (e.target === this) closeInstaller();
+        });
+
+        function setProgress(pct) {
+            document.getElementById('installerBar').style.width = pct + '%';
+            document.getElementById('installerPercent').textContent = Math.round(pct) + '%';
+        }
+
+        function setStep(idx, state) {
+            const dot = document.querySelector('#instStep' + idx + ' .inst-dot');
+            const label = document.querySelector('#instStep' + idx + ' span:last-child');
+            dot.className = 'inst-dot ' + state;
+            label.className = state === 'done' ? 'done-label' : state === 'active' ? 'active-label' : '';
+        }
+
+        function addLog(text, type) {
+            const log = document.getElementById('installerLog');
+            const color = type === 'success' ? '#10b981' : type === 'info' ? '#00D4FF' : type === 'warn' ? '#f59e0b' : 'rgba(255,255,255,0.5)';
+            const icon = type === 'success' ? '✅' : type === 'info' ? '📦' : type === 'warn' ? '⚡' : '→';
+            log.innerHTML += `<div style="color:${color}">${icon} ${text}</div>`;
+            log.scrollTop = log.scrollHeight;
+        }
+
+        async function startInstallAnim() {
+            const btn = document.getElementById('installerStartBtn');
+            btn.style.display = 'none';
+            document.getElementById('installerSteps').style.display = 'flex';
+            document.getElementById('installerLog').style.display = 'block';
+
+            const scripts = installerScripts || 100;
+            const packName = installerPack;
+            const fakeSize = (scripts * 0.35).toFixed(1);
+
+            // Phase 1: Download (0–30%)
+            setStep(0, 'active');
+            document.getElementById('installerTitle').textContent = 'Downloading ' + packName + ' package...';
+            document.getElementById('installerSubtitle').textContent = '';
+            document.getElementById('installerFooterStatus').textContent = 'Downloading...';
+            addLog('Connecting to JAZEY servers...', 'info');
+            await sleep(600);
+            addLog('Downloading package (' + fakeSize + ' MB)', 'info');
+            for (let i = 0; i <= 30; i += 2) { setProgress(i); await sleep(80); }
+            addLog('Download complete', 'success');
+            setStep(0, 'done');
+
+            // Phase 2: Extract (30–65%)
+            setStep(1, 'active');
+            document.getElementById('installerTitle').textContent = 'Extracting files to server directory...';
+            document.getElementById('installerFooterStatus').textContent = 'Extracting...';
+            addLog('Extracting ' + scripts + ' mods and scripts', 'info');
+            const resources = ['Core Framework', 'Vehicle System', 'Job Manager', 'Inventory UI', 'Phone System', 'Housing Script', 'Banking System', 'Admin Panel', 'Loading Screen', 'HUD Framework', 'Weather Sync', 'Voice Chat', 'Clothing Store', 'Garage System', 'Police MDT'];
+            let extracted = 0;
+            for (let i = 30; i <= 65; i += 1) {
+                setProgress(i);
+                if (Math.random() < 0.3 && extracted < resources.length) {
+                    addLog('Current file: ' + resources[extracted], '');
+                    extracted++;
+                }
+                await sleep(50);
+            }
+            addLog('All files extracted', 'success');
+            setStep(1, 'done');
+
+            // Phase 3: Configure (65–90%)
+            setStep(2, 'active');
+            document.getElementById('installerTitle').textContent = 'Configuring server...';
+            document.getElementById('installerFooterStatus').textContent = 'Configuring...';
+            addLog('Setting up server.cfg', 'info');
+            await sleep(400);
+            addLog('Configuring database connections', 'info');
+            for (let i = 65; i <= 90; i += 1) { setProgress(i); await sleep(60); }
+            addLog('Applying permissions & ACL', 'info');
+            await sleep(300);
+            addLog('Server configured successfully', 'success');
+            setStep(2, 'done');
+
+            // Phase 4: Complete (90–100%)
+            setStep(3, 'active');
+            document.getElementById('installerTitle').textContent = 'Finalizing installation...';
+            document.getElementById('installerFooterStatus').textContent = 'Finalizing...';
+            addLog('Running post-install checks', 'info');
+            for (let i = 90; i <= 100; i += 1) { setProgress(i); await sleep(40); }
+            addLog('Installation complete!', 'success');
+            setStep(3, 'done');
+
+            // Done
+            document.getElementById('installerTitle').innerHTML = '<span style="color:#10b981;"><i class="fas fa-check-circle"></i> Installation Ready!</span>';
+            document.getElementById('installerSubtitle').textContent = 'Complete your order below to receive your pack.';
+            document.getElementById('installerSubtitle').style.display = 'block';
+            document.getElementById('installerFooterStatus').textContent = 'Complete!';
+
+            await sleep(1500);
+
+            // Close and go to contact
+            closeInstaller();
+            document.getElementById('contact').scrollIntoView({ behavior: 'smooth' });
+            // Pre-fill the service dropdown
+            const serviceEl = document.getElementById('service');
+            if (serviceEl) serviceEl.value = installerService;
+            // Pre-fill message
+            const msgEl = document.getElementById('message');
+            if (msgEl && !msgEl.value) {
+                msgEl.value = 'I would like to order the ' + packName + ' server pack. ' + (installerScripts > 0 ? '(' + installerScripts + ' scripts)' : '');
+            }
+        }
+
+        function sleep(ms) { return new Promise(r => setTimeout(r, ms)); }
+    </script>
     <script src="script.js"></script>
 </body>
 </html>
