@@ -14,8 +14,10 @@
             --bg2: #0c0c14;
             --card: #111119;
             --card2: #16161f;
+            --card3: #1a1a24;
             --border: rgba(255,255,255,0.06);
             --border2: rgba(255,255,255,0.1);
+            --border3: rgba(255,255,255,0.14);
             --text: #ffffff;
             --dim: #8888a8;
             --muted: #555570;
@@ -38,28 +40,19 @@
         }
 
         /* Ambient BG */
-        .ambient {
-            position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
-        }
-
-        .ambient-orb {
-            position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.15;
-        }
-
+        .ambient { position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden; }
+        .ambient-orb { position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.12; }
         .ambient-orb-1 { width: 600px; height: 600px; background: #6C63FF; top: -200px; right: -150px; animation: ambFloat 12s ease-in-out infinite; }
         .ambient-orb-2 { width: 400px; height: 400px; background: #00D4FF; bottom: -100px; left: -100px; animation: ambFloat 15s ease-in-out infinite reverse; }
         .ambient-orb-3 { width: 300px; height: 300px; background: #4B0082; top: 40%; left: 30%; animation: ambFloat 18s ease-in-out infinite; }
-
         @keyframes ambFloat { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-40px) scale(1.05); } }
 
-        /* Layout */
         .wrapper { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
 
-        /* ── Login Screen ────────────── */
-        .login-screen {
-            flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 20px;
-        }
-
+        /* ═══════════════════════════════════════
+           LOGIN SCREEN
+           ═══════════════════════════════════════ */
+        .login-screen { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 20px; }
         .login-screen.hidden { display: none; }
 
         .login-card {
@@ -76,51 +69,44 @@
             border-radius: 18px; display: flex; align-items: center; justify-content: center;
             font-size: 1.6rem;
         }
-
         .login-icon i { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
 
         .login-header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.75rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
         .login-header p { color: var(--dim); font-size: 0.9rem; line-height: 1.5; }
 
         .login-form { display: flex; flex-direction: column; gap: 18px; }
-
         .login-form label { font-size: 0.8rem; font-weight: 600; color: var(--dim); }
 
-        .login-form input {
+        .login-form input, .chat-input input {
             padding: 14px 18px; background: var(--bg2); border: 1px solid var(--border);
             border-radius: 12px; color: #fff; font-size: 1rem; font-family: 'Inter', sans-serif;
-            outline: none; transition: 0.3s;
+            outline: none; transition: 0.3s; width: 100%;
         }
+        .login-form input:focus, .chat-input input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,0.15); }
+        .login-form input::placeholder, .chat-input input::placeholder { color: var(--muted); }
 
-        .login-form input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,0.15); }
-        .login-form input::placeholder { color: var(--muted); }
-
-        .login-btn {
+        .login-btn, .btn-gradient {
             padding: 16px 24px; background: var(--gradient); border: none; border-radius: 14px;
             color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.3s;
-            font-family: 'Inter', sans-serif; margin-top: 8px;
+            font-family: 'Inter', sans-serif; margin-top: 8px; text-align: center;
         }
-
-        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,0.35); }
-        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+        .login-btn:hover, .btn-gradient:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,0.35); }
+        .login-btn:disabled, .btn-gradient:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
         .login-error {
             display: none; padding: 14px 18px; background: rgba(239,68,68,0.08);
             border: 1px solid rgba(239,68,68,0.2); border-radius: 12px;
             color: var(--red); font-size: 0.9rem;
         }
-
         .login-error.show { display: block; animation: fadeIn 0.3s ease; }
 
-        .login-link {
-            text-align: center; margin-top: 24px;
-            font-size: 0.88rem; color: var(--dim);
-        }
-
+        .login-link { text-align: center; margin-top: 24px; font-size: 0.88rem; color: var(--dim); }
         .login-link a { color: var(--accent2); text-decoration: none; font-weight: 500; }
         .login-link a:hover { text-decoration: underline; }
 
-        /* ── Dashboard ────────────── */
+        /* ═══════════════════════════════════════
+           DASHBOARD
+           ═══════════════════════════════════════ */
         .dashboard { display: none; flex: 1; flex-direction: column; }
         .dashboard.visible { display: flex; }
 
@@ -128,63 +114,122 @@
         .nav {
             display: flex; align-items: center; justify-content: space-between;
             padding: 18px 32px; border-bottom: 1px solid var(--border);
-            background: rgba(6,6,9,0.8); backdrop-filter: blur(20px);
+            background: rgba(6,6,9,0.85); backdrop-filter: blur(20px);
+            position: sticky; top: 0; z-index: 50;
         }
-
         .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
         .nav-brand h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; letter-spacing: 2px; }
         .nav-badge { padding: 3px 10px; background: var(--gradient); border-radius: 6px; font-size: 0.6rem; font-weight: 700; letter-spacing: 1px; }
 
-        .nav-links { display: flex; align-items: center; gap: 20px; }
+        .nav-links { display: flex; align-items: center; gap: 16px; }
         .nav-links a { color: var(--dim); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: 0.3s; }
         .nav-links a:hover { color: var(--accent); }
 
         .btn-logout {
-            padding: 8px 18px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.25);
-            border-radius: 10px; color: var(--red); font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            padding: 8px 18px; background: rgba(239,68,68,0.12); border: 1px solid rgba(239,68,68,0.2);
+            border-radius: 10px; color: var(--red); font-size: 0.82rem; font-weight: 600; cursor: pointer;
             font-family: 'Inter', sans-serif; transition: 0.3s;
         }
-
-        .btn-logout:hover { background: rgba(239,68,68,0.25); }
+        .btn-logout:hover { background: rgba(239,68,68,0.22); }
 
         /* Dashboard Content */
-        .dashboard-main { flex: 1; padding: 36px 32px; max-width: 1200px; margin: 0 auto; width: 100%; }
+        .dashboard-main { flex: 1; padding: 36px 32px; max-width: 1280px; margin: 0 auto; width: 100%; }
 
-        .dashboard-header { margin-bottom: 32px; }
+        .dashboard-header { margin-bottom: 28px; display: flex; align-items: flex-start; justify-content: space-between; flex-wrap: wrap; gap: 16px; }
+        .dash-header-left h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.9rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; }
+        .dash-header-left h1 span { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+        .dash-header-left p { color: var(--dim); font-size: 0.95rem; }
 
-        .dashboard-header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.9rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; }
-        .dashboard-header h1 span { color: var(--accent2); }
-        .dashboard-header p { color: var(--dim); font-size: 0.95rem; }
+        .dash-header-right { display: flex; align-items: center; gap: 12px; }
 
-        /* Tickets Grid */
+        .btn-new-project {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 12px 24px; background: var(--gradient); border: none; border-radius: 12px;
+            color: #fff; font-weight: 700; font-size: 0.88rem; text-decoration: none;
+            cursor: pointer; transition: 0.3s; font-family: 'Inter', sans-serif;
+        }
+        .btn-new-project:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,0.3); }
+
+        /* ── Stat Cards ─────────────── */
+        .stats-row {
+            display: grid; grid-template-columns: repeat(auto-fit, minmax(200px, 1fr));
+            gap: 16px; margin-bottom: 28px;
+        }
+
+        .stat-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            padding: 22px 24px; display: flex; align-items: center; gap: 18px; transition: 0.3s;
+        }
+        .stat-card:hover { border-color: var(--border2); }
+
+        .stat-icon {
+            width: 48px; height: 48px; border-radius: 14px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.15rem; flex-shrink: 0;
+        }
+        .stat-icon.blue { background: rgba(108,99,255,0.12); color: var(--accent); }
+        .stat-icon.cyan { background: rgba(0,212,255,0.12); color: var(--accent2); }
+        .stat-icon.green { background: rgba(16,185,129,0.12); color: var(--green); }
+        .stat-icon.yellow { background: rgba(245,158,11,0.12); color: var(--yellow); }
+
+        .stat-info h3 { font-size: 1.6rem; font-weight: 800; font-family: 'Space Grotesk', sans-serif; letter-spacing: -0.5px; }
+        .stat-info p { font-size: 0.78rem; color: var(--dim); margin-top: 2px; }
+
+        /* ── Tabs ─────────────────── */
+        .portal-tabs {
+            display: flex; gap: 4px; margin-bottom: 24px;
+            background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+            padding: 4px; width: fit-content;
+        }
+
+        .portal-tab {
+            padding: 10px 20px; border: none; border-radius: 10px; background: transparent;
+            color: var(--dim); font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            font-family: 'Inter', sans-serif; transition: 0.3s; white-space: nowrap;
+        }
+        .portal-tab:hover { color: var(--text); }
+        .portal-tab.active { background: var(--gradient); color: #fff; }
+
+        .tab-panel { display: none; animation: fadeIn 0.3s ease; }
+        .tab-panel.active { display: block; }
+
+        /* ── Filters ─────────────── */
+        .filters-row {
+            display: flex; gap: 8px; margin-bottom: 20px; flex-wrap: wrap; align-items: center;
+        }
+
+        .filter-btn {
+            padding: 8px 16px; border: 1px solid var(--border); border-radius: 50px;
+            background: transparent; color: var(--dim); font-size: 0.78rem; font-weight: 600;
+            cursor: pointer; transition: 0.3s; font-family: 'Inter', sans-serif;
+        }
+        .filter-btn:hover { border-color: var(--border3); color: var(--text); }
+        .filter-btn.active { background: var(--accent); border-color: var(--accent); color: #fff; }
+
+        .filter-label { font-size: 0.78rem; color: var(--muted); font-weight: 600; margin-right: 4px; }
+
+        /* ── Tickets Grid ─────────── */
         .tickets-grid {
-            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(340px, 1fr)); gap: 16px;
         }
 
         .ticket-card {
             background: var(--card); border: 1px solid var(--border); border-radius: 18px;
             padding: 24px; cursor: pointer; transition: 0.3s; text-decoration: none; color: inherit;
-            display: block;
+            display: block; position: relative; overflow: hidden;
         }
+        .ticket-card:hover { border-color: rgba(108,99,255,0.3); transform: translateY(-2px); box-shadow: 0 12px 40px rgba(0,0,0,0.3); }
+        .ticket-card.is-expanded { border-color: var(--accent); box-shadow: 0 0 0 1px var(--accent); }
 
-        .ticket-card:hover {
-            border-color: rgba(108,99,255,0.3); transform: translateY(-3px);
-            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
-        }
-
-        .ticket-card-top {
-            display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
-        }
-
+        .ticket-card-top { display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 12px; flex-wrap: wrap; }
         .ticket-card-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
 
-        .ticket-number { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--accent2); }
+        .ticket-number { font-family: 'Space Grotesk', sans-serif; font-size: 1.45rem; font-weight: 800; color: var(--accent2); }
+
         .ticket-status-pill {
             display: inline-flex; align-items: center; gap: 6px;
-            padding: 6px 14px; border-radius: 50px; font-size: 0.72rem; font-weight: 700;
-            text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; flex-shrink: 0;
+            padding: 5px 14px; border-radius: 50px; font-size: 0.7rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap;
         }
-
         .ticket-status-pill .pulse-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
 
         .pill-new { background: rgba(108,99,255,0.12); color: var(--accent); }
@@ -200,62 +245,269 @@
         .pill-cancelled { background: rgba(239,68,68,0.12); color: var(--red); }
         .pill-cancelled .pulse-dot { background: var(--red); }
 
-        .ticket-service { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+        .ticket-service { font-size: 0.95rem; font-weight: 600; margin-bottom: 10px; }
 
-        .ticket-meta {
-            display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
-            font-size: 0.8rem; color: var(--muted);
-        }
+        .ticket-meta { display: flex; align-items: center; gap: 14px; flex-wrap: wrap; font-size: 0.8rem; color: var(--muted); }
+        .ticket-meta span { display: inline-flex; align-items: center; gap: 5px; }
+        .ticket-meta i { font-size: 0.72rem; color: var(--dim); }
 
-        .ticket-meta span { display: inline-flex; align-items: center; gap: 6px; }
-        .ticket-meta i { font-size: 0.75rem; color: var(--dim); }
-
-        .ticket-updated { font-size: 0.78rem; color: var(--dim); margin-top: 12px; }
+        .ticket-updated { font-size: 0.76rem; color: var(--dim); margin-top: 10px; }
 
         .priority-badge {
             display: inline-flex; align-items: center; gap: 4px;
             padding: 3px 10px; background: rgba(245,158,11,0.12);
-            border-radius: 50px; font-size: 0.65rem; font-weight: 700;
+            border-radius: 50px; font-size: 0.62rem; font-weight: 700;
             color: var(--yellow); text-transform: uppercase; letter-spacing: 0.5px;
         }
 
+        .new-msg-dot {
+            position: absolute; top: 16px; right: 16px;
+            width: 10px; height: 10px; border-radius: 50%; background: var(--accent);
+            animation: pulse 1.5s ease-in-out infinite;
+        }
+
+        /* ── Ticket Detail (Inline Expanded) ── */
+        .ticket-detail-overlay {
+            display: none; position: fixed; inset: 0; z-index: 100;
+            background: rgba(0,0,0,0.6); backdrop-filter: blur(8px);
+            align-items: flex-start; justify-content: center;
+            padding: 40px 20px; overflow-y: auto;
+        }
+        .ticket-detail-overlay.open { display: flex; animation: fadeIn 0.25s ease; }
+
+        .ticket-detail {
+            width: 100%; max-width: 820px;
+            background: var(--card); border: 1px solid var(--border2); border-radius: 24px;
+            padding: 0; overflow: hidden; box-shadow: 0 30px 100px rgba(0,0,0,0.5);
+            animation: slideUp 0.3s ease;
+        }
+
+        @keyframes slideUp { from { transform: translateY(30px); opacity: 0; } to { transform: translateY(0); opacity: 1; } }
+
+        .detail-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 24px 28px; border-bottom: 1px solid var(--border);
+            background: var(--card2);
+        }
+
+        .detail-header-left { display: flex; align-items: center; gap: 16px; }
+        .detail-header-left .ticket-number { font-size: 1.5rem; }
+        .detail-header-left .detail-service { font-size: 0.92rem; color: var(--dim); }
+
+        .detail-close {
+            width: 40px; height: 40px; border: 1px solid var(--border);
+            border-radius: 12px; background: var(--card); color: var(--dim);
+            cursor: pointer; font-size: 1rem; display: flex; align-items: center;
+            justify-content: center; transition: 0.3s;
+        }
+        .detail-close:hover { color: var(--red); border-color: rgba(239,68,68,0.3); background: rgba(239,68,68,0.06); }
+
+        .detail-body { padding: 28px; }
+
+        /* Detail sections */
+        .detail-section { margin-bottom: 28px; }
+        .detail-section:last-child { margin-bottom: 0; }
+        .detail-section-title { font-size: 0.82rem; font-weight: 700; color: var(--dim); text-transform: uppercase; letter-spacing: 1px; margin-bottom: 14px; display: flex; align-items: center; gap: 8px; }
+        .detail-section-title i { font-size: 0.75rem; color: var(--accent); }
+
+        /* Status Progress */
+        .status-progress {
+            display: flex; align-items: center; gap: 0; padding: 8px 0;
+        }
+
+        .progress-step {
+            flex: 1; display: flex; flex-direction: column; align-items: center; gap: 8px;
+            position: relative; text-align: center;
+        }
+
+        .progress-dot {
+            width: 32px; height: 32px; border-radius: 50%; border: 2px solid var(--border2);
+            display: flex; align-items: center; justify-content: center; font-size: 0.7rem;
+            color: var(--muted); background: var(--bg2); position: relative; z-index: 2;
+            transition: 0.3s;
+        }
+        .progress-dot.done { border-color: var(--green); background: var(--green); color: #fff; }
+        .progress-dot.current { border-color: var(--accent); background: var(--accent); color: #fff; box-shadow: 0 0 0 6px rgba(108,99,255,0.2); }
+        .progress-dot.cancelled { border-color: var(--red); background: var(--red); color: #fff; }
+
+        .progress-label { font-size: 0.68rem; color: var(--muted); font-weight: 600; }
+        .progress-label.done, .progress-label.current { color: var(--text); }
+
+        .progress-line {
+            position: absolute; top: 16px; left: 50%; right: -50%; height: 2px;
+            background: var(--border2); z-index: 1;
+        }
+        .progress-line.done { background: var(--green); }
+
+        /* Status History */
+        .status-history { display: flex; flex-direction: column; gap: 10px; }
+
+        .history-item {
+            display: flex; align-items: flex-start; gap: 12px;
+            font-size: 0.85rem; color: var(--dim);
+        }
+
+        .history-dot {
+            width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0;
+        }
+        .history-dot.new { background: var(--accent); }
+        .history-dot.reviewing { background: var(--yellow); }
+        .history-dot.in-progress { background: var(--accent2); }
+        .history-dot.testing { background: var(--purple); }
+        .history-dot.completed { background: var(--green); }
+        .history-dot.cancelled { background: var(--red); }
+
+        .history-text strong { color: var(--text); }
+        .history-time { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+        /* Chat */
+        .chat-area {
+            background: var(--bg2); border: 1px solid var(--border); border-radius: 16px;
+            overflow: hidden;
+        }
+
+        .chat-messages {
+            max-height: 320px; overflow-y: auto; padding: 16px; display: flex;
+            flex-direction: column; gap: 10px; min-height: 100px;
+        }
+
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: var(--border2); border-radius: 4px; }
+
+        .chat-msg {
+            max-width: 80%; padding: 12px 16px; border-radius: 16px;
+            font-size: 0.88rem; line-height: 1.5; word-wrap: break-word;
+        }
+        .chat-msg.client { align-self: flex-end; background: var(--accent); color: #fff; border-bottom-right-radius: 4px; }
+        .chat-msg.admin { align-self: flex-start; background: var(--card2); color: var(--text); border: 1px solid var(--border); border-bottom-left-radius: 4px; }
+        .chat-msg .msg-sender { font-size: 0.7rem; font-weight: 700; margin-bottom: 4px; opacity: 0.7; }
+        .chat-msg .msg-time { font-size: 0.65rem; opacity: 0.5; margin-top: 4px; }
+
+        .chat-empty { text-align: center; padding: 40px 20px; color: var(--muted); font-size: 0.88rem; }
+        .chat-empty i { font-size: 1.5rem; margin-bottom: 10px; display: block; opacity: 0.3; }
+
+        .chat-input {
+            display: flex; gap: 10px; padding: 12px 16px; border-top: 1px solid var(--border);
+            background: var(--card);
+        }
+        .chat-input input { flex: 1; padding: 12px 16px; font-size: 0.9rem; border-radius: 12px; }
+        .chat-send {
+            padding: 12px 20px; background: var(--gradient); border: none; border-radius: 12px;
+            color: #fff; font-weight: 700; cursor: pointer; transition: 0.3s; font-size: 0.9rem;
+            font-family: 'Inter', sans-serif; white-space: nowrap;
+        }
+        .chat-send:hover { transform: translateY(-1px); box-shadow: 0 6px 20px rgba(108,99,255,0.3); }
+        .chat-send:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        /* Files list */
+        .files-list { display: flex; flex-direction: column; gap: 8px; }
+
+        .file-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 14px 18px; background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 12px; transition: 0.3s; text-decoration: none; color: inherit;
+        }
+        .file-item:hover { border-color: var(--accent); background: rgba(108,99,255,0.04); }
+        .file-icon { width: 40px; height: 40px; border-radius: 10px; background: rgba(108,99,255,0.12); color: var(--accent); display: flex; align-items: center; justify-content: center; font-size: 1rem; flex-shrink: 0; }
+        .file-name { font-size: 0.88rem; font-weight: 600; }
+        .file-action { margin-left: auto; color: var(--accent2); font-size: 0.88rem; }
+
+        .no-files { text-align: center; padding: 20px; color: var(--muted); font-size: 0.85rem; }
+
+        /* ── Activity Feed (Tab) ────── */
+        .activity-feed { display: flex; flex-direction: column; gap: 12px; }
+
+        .activity-item {
+            display: flex; gap: 14px; padding: 18px 20px;
+            background: var(--card); border: 1px solid var(--border); border-radius: 14px;
+            transition: 0.3s; cursor: pointer;
+        }
+        .activity-item:hover { border-color: var(--border2); }
+
+        .activity-icon {
+            width: 40px; height: 40px; border-radius: 12px; display: flex;
+            align-items: center; justify-content: center; font-size: 0.9rem; flex-shrink: 0;
+        }
+        .activity-icon.msg { background: rgba(108,99,255,0.12); color: var(--accent); }
+        .activity-icon.status { background: rgba(0,212,255,0.12); color: var(--accent2); }
+        .activity-icon.file { background: rgba(16,185,129,0.12); color: var(--green); }
+
+        .activity-content { flex: 1; }
+        .activity-content strong { color: var(--text); }
+        .activity-content p { font-size: 0.88rem; color: var(--dim); line-height: 1.5; }
+        .activity-time { font-size: 0.72rem; color: var(--muted); margin-top: 4px; }
+
+        /* ── Profile (Tab) ────── */
+        .profile-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+            padding: 32px; max-width: 520px;
+        }
+
+        .profile-avatar {
+            width: 72px; height: 72px; border-radius: 50%; background: var(--gradient);
+            display: flex; align-items: center; justify-content: center;
+            font-size: 1.8rem; font-weight: 800; font-family: 'Space Grotesk', sans-serif;
+            color: #fff; margin-bottom: 20px;
+        }
+
+        .profile-info { display: flex; flex-direction: column; gap: 14px; }
+        .profile-row { display: flex; justify-content: space-between; align-items: center; padding: 12px 0; border-bottom: 1px solid var(--border); }
+        .profile-row:last-child { border-bottom: none; }
+        .profile-label { font-size: 0.82rem; color: var(--dim); font-weight: 600; }
+        .profile-value { font-size: 0.92rem; font-weight: 600; color: var(--text); }
+
+        /* ── Empty State ─────────── */
         .empty-state {
             text-align: center; padding: 60px 24px; color: var(--dim);
             background: var(--card); border: 1px solid var(--border); border-radius: 20px;
         }
-
         .empty-state i { font-size: 3rem; margin-bottom: 16px; opacity: 0.3; display: block; }
         .empty-state p { font-size: 1rem; margin-bottom: 8px; color: var(--text); }
         .empty-state a { color: var(--accent2); text-decoration: none; font-weight: 500; }
         .empty-state a:hover { text-decoration: underline; }
 
-        /* Refresh badge */
-        .refresh-badge {
-            text-align: center; margin-top: 24px; font-size: 0.75rem; color: var(--muted);
-        }
-
+        .refresh-badge { text-align: center; margin-top: 20px; font-size: 0.72rem; color: var(--muted); }
         .refresh-badge i { margin-right: 4px; }
+
+        /* Footer */
+        .page-footer { text-align: center; padding: 24px; color: var(--muted); font-size: 0.8rem; border-top: 1px solid var(--border); }
+        .page-footer a { color: var(--accent2); text-decoration: none; }
+        .page-footer a:hover { text-decoration: underline; }
+
+        /* Toast */
+        .toast-container { position: fixed; bottom: 24px; right: 24px; z-index: 200; display: flex; flex-direction: column; gap: 8px; }
+        .toast {
+            padding: 14px 20px; border-radius: 12px; font-size: 0.88rem; font-weight: 600;
+            color: #fff; animation: slideUp 0.3s ease; box-shadow: 0 8px 30px rgba(0,0,0,0.3);
+        }
+        .toast.success { background: var(--green); }
+        .toast.error { background: var(--red); }
+        .toast.info { background: var(--accent); }
 
         @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
         @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
 
-        /* Footer */
-        .page-footer {
-            text-align: center; padding: 24px; color: var(--muted); font-size: 0.8rem;
-            border-top: 1px solid var(--border);
-        }
-
-        .page-footer a { color: var(--accent2); text-decoration: none; }
-        .page-footer a:hover { text-decoration: underline; }
-
         /* Responsive */
         @media (max-width: 768px) {
-            .nav { padding: 14px 16px; }
-            .nav-links { gap: 12px; }
+            .nav { padding: 14px 16px; flex-wrap: wrap; gap: 12px; }
+            .nav-links { gap: 10px; flex-wrap: wrap; }
             .dashboard-main { padding: 24px 16px; }
+            .dashboard-header { flex-direction: column; }
             .tickets-grid { grid-template-columns: 1fr; }
+            .stats-row { grid-template-columns: 1fr 1fr; }
             .login-card { padding: 32px 24px; }
-            .dashboard-header h1 { font-size: 1.5rem; }
+            .dash-header-left h1 { font-size: 1.5rem; }
+            .portal-tabs { overflow-x: auto; width: 100%; }
+            .ticket-detail { border-radius: 16px; }
+            .detail-body { padding: 20px; }
+            .chat-msg { max-width: 90%; }
+            .status-progress { flex-wrap: wrap; gap: 8px; }
+        }
+
+        @media (max-width: 480px) {
+            .stats-row { grid-template-columns: 1fr; }
+            .detail-header { flex-direction: column; gap: 12px; align-items: flex-start; }
         }
     </style>
 </head>
@@ -287,7 +539,7 @@
                     <label for="password">Password</label>
                     <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
 
-                    <button type="submit" class="login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Log in</button>
+                    <button type="submit" class="login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i>&nbsp; Log in</button>
                 </form>
 
                 <p class="login-link">Don't have an account? <a href="/#contact">Submit a project first!</a></p>
@@ -303,20 +555,83 @@
                 </a>
                 <div class="nav-links">
                     <a href="/"><i class="fas fa-home"></i> Home</a>
-                    <a href="/ticket.html"><i class="fas fa-ticket-alt"></i> Ticket Tracker</a>
+                    <a href="/reviews"><i class="fas fa-star"></i> Reviews</a>
+                    <a href="/#contact"><i class="fas fa-plus"></i> New Project</a>
                     <button class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
                 </div>
             </nav>
 
             <main class="dashboard-main">
+                <!-- Header -->
                 <div class="dashboard-header">
-                    <h1>Welcome back, <span id="welcomeUser">—</span></h1>
-                    <p id="welcomeSubtitle">Your active tickets and project status.</p>
+                    <div class="dash-header-left">
+                        <h1>Welcome back, <span id="welcomeUser">--</span></h1>
+                        <p id="welcomeSubtitle">Loading your projects...</p>
+                    </div>
+                    <div class="dash-header-right">
+                        <a href="/#contact" class="btn-new-project"><i class="fas fa-plus"></i> New Project</a>
+                    </div>
                 </div>
 
-                <div class="tickets-grid" id="ticketsGrid"></div>
+                <!-- Stat Cards -->
+                <div class="stats-row" id="statsRow">
+                    <div class="stat-card">
+                        <div class="stat-icon blue"><i class="fas fa-ticket-alt"></i></div>
+                        <div class="stat-info"><h3 id="statTotal">0</h3><p>Total Tickets</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon cyan"><i class="fas fa-code"></i></div>
+                        <div class="stat-info"><h3 id="statActive">0</h3><p>Active</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon green"><i class="fas fa-check-circle"></i></div>
+                        <div class="stat-info"><h3 id="statCompleted">0</h3><p>Completed</p></div>
+                    </div>
+                    <div class="stat-card">
+                        <div class="stat-icon yellow"><i class="fas fa-comments"></i></div>
+                        <div class="stat-info"><h3 id="statMessages">0</h3><p>Messages</p></div>
+                    </div>
+                </div>
 
-                <div class="refresh-badge"><i class="fas fa-sync-alt"></i> Auto-refreshes every 30 seconds</div>
+                <!-- Tabs -->
+                <div class="portal-tabs">
+                    <button class="portal-tab active" data-tab="tickets"><i class="fas fa-ticket-alt"></i>&nbsp; My Tickets</button>
+                    <button class="portal-tab" data-tab="activity"><i class="fas fa-bell"></i>&nbsp; Activity</button>
+                    <button class="portal-tab" data-tab="profile"><i class="fas fa-user"></i>&nbsp; Profile</button>
+                </div>
+
+                <!-- Tab: Tickets -->
+                <div class="tab-panel active" id="panel-tickets">
+                    <div class="filters-row">
+                        <span class="filter-label">Filter:</span>
+                        <button class="filter-btn active" data-filter="all">All</button>
+                        <button class="filter-btn" data-filter="active">Active</button>
+                        <button class="filter-btn" data-filter="completed">Completed</button>
+                        <button class="filter-btn" data-filter="cancelled">Cancelled</button>
+                    </div>
+                    <div class="tickets-grid" id="ticketsGrid"></div>
+                </div>
+
+                <!-- Tab: Activity -->
+                <div class="tab-panel" id="panel-activity">
+                    <div class="activity-feed" id="activityFeed"></div>
+                </div>
+
+                <!-- Tab: Profile -->
+                <div class="tab-panel" id="panel-profile">
+                    <div class="profile-card">
+                        <div class="profile-avatar" id="profileAvatar">?</div>
+                        <div class="profile-info">
+                            <div class="profile-row"><span class="profile-label">Username</span><span class="profile-value" id="profileUsername">--</span></div>
+                            <div class="profile-row"><span class="profile-label">Discord</span><span class="profile-value" id="profileDiscord">--</span></div>
+                            <div class="profile-row"><span class="profile-label">Member Since</span><span class="profile-value" id="profileSince">--</span></div>
+                            <div class="profile-row"><span class="profile-label">Total Tickets</span><span class="profile-value" id="profileTickets">0</span></div>
+                            <div class="profile-row"><span class="profile-label">Active Projects</span><span class="profile-value" id="profileActive">0</span></div>
+                        </div>
+                    </div>
+                </div>
+
+                <div class="refresh-badge"><i class="fas fa-sync-alt"></i> Auto-refreshes every 20 seconds</div>
             </main>
 
             <div class="page-footer">
@@ -325,10 +640,18 @@
         </div>
     </div>
 
+    <!-- Ticket Detail Overlay -->
+    <div class="ticket-detail-overlay" id="detailOverlay">
+        <div class="ticket-detail" id="ticketDetail"></div>
+    </div>
+
+    <!-- Toast Container -->
+    <div class="toast-container" id="toastContainer"></div>
+
     <script>
         const STORAGE_USER = 'jazey_client_user';
         const STORAGE_PASS = 'jazey_client_pass';
-        const REFRESH_INTERVAL = 30000; // 30 seconds
+        const REFRESH_MS = 20000;
 
         const loginScreen = document.getElementById('loginScreen');
         const dashboard = document.getElementById('dashboard');
@@ -341,36 +664,31 @@
         const welcomeUser = document.getElementById('welcomeUser');
         const welcomeSubtitle = document.getElementById('welcomeSubtitle');
         const ticketsGrid = document.getElementById('ticketsGrid');
+        const detailOverlay = document.getElementById('detailOverlay');
+        const ticketDetail = document.getElementById('ticketDetail');
+        const activityFeed = document.getElementById('activityFeed');
 
         let refreshTimer = null;
+        let allTickets = [];
+        let allTicketDetails = {};
+        let currentFilter = 'all';
+        let openTicketId = null;
 
-        // ── Auth helpers ─────────────────
-        function getAuthHeaders() {
-            const user = sessionStorage.getItem(STORAGE_USER);
-            const pass = sessionStorage.getItem(STORAGE_PASS);
-            return {
-                'X-Client-Username': user || '',
-                'X-Client-Password': pass || ''
-            };
+        // ── Auth ───────────────────────────
+        function authHeaders() {
+            return { 'X-Client-Username': sessionStorage.getItem(STORAGE_USER) || '', 'X-Client-Password': sessionStorage.getItem(STORAGE_PASS) || '' };
         }
 
-        function showLoginError(msg) {
-            loginError.textContent = msg;
-            loginError.classList.add('show');
-        }
+        function showLoginError(msg) { loginError.textContent = msg; loginError.classList.add('show'); }
+        function hideLoginError() { loginError.classList.remove('show'); }
 
-        function hideLoginError() {
-            loginError.classList.remove('show');
-        }
-
-        function setLoggedIn(user, password) {
+        function setLoggedIn(user, pass) {
             sessionStorage.setItem(STORAGE_USER, user);
-            sessionStorage.setItem(STORAGE_PASS, password || passwordInput.value);
+            sessionStorage.setItem(STORAGE_PASS, pass || passwordInput.value);
             loginScreen.classList.add('hidden');
             dashboard.classList.add('visible');
             welcomeUser.textContent = user;
-            loadProfile();
-            loadTickets();
+            loadAll();
             startRefresh();
         }
 
@@ -379,229 +697,472 @@
             sessionStorage.removeItem(STORAGE_PASS);
             dashboard.classList.remove('visible');
             loginScreen.classList.remove('hidden');
-            usernameInput.value = '';
-            passwordInput.value = '';
-            hideLoginError();
-            stopRefresh();
+            usernameInput.value = ''; passwordInput.value = '';
+            hideLoginError(); stopRefresh();
+            allTickets = []; allTicketDetails = {};
         }
 
-        // ── Login ───────────────────────
+        // ── Login ──────────────────────────
         loginForm.addEventListener('submit', async (e) => {
             e.preventDefault();
             hideLoginError();
-
-            const username = usernameInput.value.trim();
-            const password = passwordInput.value;
-
-            if (!username || !password) {
-                showLoginError('Please enter your Discord tag and password.');
-                return;
-            }
-
+            const user = usernameInput.value.trim();
+            const pass = passwordInput.value;
+            if (!user || !pass) { showLoginError('Please enter your Discord tag and password.'); return; }
             loginBtn.disabled = true;
-            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
-
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>&nbsp; Signing in...';
             try {
-                const res = await fetch('/api/client/login', {
-                    method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
-                    body: JSON.stringify({ username, password })
-                });
-
+                const res = await fetch('/api/client/login', { method: 'POST', headers: { 'Content-Type': 'application/json' }, body: JSON.stringify({ username: user, password: pass }) });
                 const data = await res.json();
-
                 if (data.success) {
-                    setLoggedIn(username);
+                    setLoggedIn(user, pass);
                 } else {
-                    showLoginError(data.error || 'Invalid credentials. Please try again.');
-                    passwordInput.value = '';
-                    passwordInput.focus();
+                    showLoginError(data.error || 'Invalid credentials.');
+                    passwordInput.value = ''; passwordInput.focus();
                 }
-            } catch (err) {
-                showLoginError('Connection error. Please try again.');
-            } finally {
-                loginBtn.disabled = false;
-                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Log in';
-            }
+            } catch { showLoginError('Connection error. Please try again.'); }
+            finally { loginBtn.disabled = false; loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i>&nbsp; Log in'; }
         });
 
-        // ── Logout ──────────────────────
         logoutBtn.addEventListener('click', setLoggedOut);
 
-        // ── Profile ─────────────────────
+        // ── Data Loading ───────────────────
+        async function loadAll() {
+            await Promise.all([loadProfile(), loadTickets()]);
+            buildActivity();
+        }
+
         async function loadProfile() {
             try {
-                const res = await fetch('/api/client/profile', { headers: getAuthHeaders() });
+                const res = await fetch('/api/client/profile', { headers: authHeaders() });
+                if (res.status === 401) { setLoggedOut(); return; }
                 const data = await res.json();
                 if (data.success && data.profile) {
                     const p = data.profile;
-                    const active = p.active_count ?? p.activeCount ?? 0;
-                    const total = p.total_count ?? p.totalCount ?? 0;
-                    welcomeSubtitle.textContent = `${active} active of ${total} total ticket${total === 1 ? '' : 's'}`;
+                    welcomeSubtitle.textContent = `${p.activeTickets || 0} active of ${p.totalTickets || 0} total ticket${(p.totalTickets || 0) === 1 ? '' : 's'}`;
+                    document.getElementById('profileUsername').textContent = p.username || '--';
+                    document.getElementById('profileDiscord').textContent = p.discord || p.username || '--';
+                    document.getElementById('profileTickets').textContent = p.totalTickets || 0;
+                    document.getElementById('profileActive').textContent = p.activeTickets || 0;
+                    document.getElementById('profileAvatar').textContent = (p.username || '?')[0].toUpperCase();
+                    // Member since will be set from tickets
                 }
-            } catch (e) {
-                welcomeSubtitle.textContent = 'Your active tickets and project status.';
-            }
+            } catch { welcomeSubtitle.textContent = 'Your active tickets and project status.'; }
         }
 
-        // ── Tickets ─────────────────────
         async function loadTickets() {
             try {
-                const res = await fetch('/api/client/tickets', { headers: getAuthHeaders() });
+                const res = await fetch('/api/client/tickets', { headers: authHeaders() });
+                if (res.status === 401) { setLoggedOut(); return; }
                 const data = await res.json();
-
                 if (!data.success) {
-                    if (res.status === 401) {
-                        setLoggedOut();
-                        return;
-                    }
-                    ticketsGrid.innerHTML = `
-                        <div class="empty-state" style="grid-column: 1/-1;">
-                            <i class="fas fa-exclamation-triangle"></i>
-                            <p>Could not load tickets.</p>
-                            <p>${escapeHtml(data.error || 'Please try again later.')}</p>
-                        </div>
-                    `;
+                    ticketsGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-exclamation-triangle"></i><p>Could not load tickets.</p></div>';
                     return;
                 }
+                allTickets = data.tickets || [];
 
-                const tickets = data.tickets || [];
+                // Update stat cards
+                const total = allTickets.length;
+                const active = allTickets.filter(t => !['completed', 'cancelled'].includes(t.status)).length;
+                const completed = allTickets.filter(t => t.status === 'completed').length;
+                const totalMsgs = allTickets.reduce((s, t) => s + (t.messages || 0), 0);
+                document.getElementById('statTotal').textContent = total;
+                document.getElementById('statActive').textContent = active;
+                document.getElementById('statCompleted').textContent = completed;
+                document.getElementById('statMessages').textContent = totalMsgs;
 
-                if (tickets.length === 0) {
-                    ticketsGrid.innerHTML = `
-                        <div class="empty-state" style="grid-column: 1/-1;">
-                            <i class="fas fa-inbox"></i>
-                            <p>No tickets yet.</p>
-                            <p>Submit a project to get started! <a href="/#contact">Contact us</a></p>
-                        </div>
-                    `;
-                    return;
+                // Member since
+                if (allTickets.length > 0) {
+                    const oldest = [...allTickets].sort((a, b) => new Date(a.created_at) - new Date(b.created_at))[0];
+                    document.getElementById('profileSince').textContent = formatDate(oldest.created_at);
                 }
 
-                ticketsGrid.innerHTML = tickets.map(t => renderTicketCard(t)).join('');
-            } catch (err) {
-                ticketsGrid.innerHTML = `
-                    <div class="empty-state" style="grid-column: 1/-1;">
-                        <i class="fas fa-wifi"></i>
-                        <p>Connection error.</p>
-                        <p>Please check your connection and try again.</p>
-                    </div>
-                `;
+                // Load full details for each ticket (for timeline, chat, files)
+                await loadTicketDetails();
+
+                renderTickets();
+                if (openTicketId && allTicketDetails[openTicketId]) {
+                    renderTicketDetail(openTicketId);
+                }
+            } catch {
+                ticketsGrid.innerHTML = '<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-wifi"></i><p>Connection error.</p></div>';
             }
         }
 
-        function renderTicketCard(t) {
-            const statusMap = {
-                'new': 'pill-new',
-                'reviewing': 'pill-reviewing',
-                'in-progress': 'pill-in-progress',
-                'testing': 'pill-testing',
-                'completed': 'pill-completed',
-                'cancelled': 'pill-cancelled'
-            };
-            const statusLabels = {
-                'new': 'New',
-                'reviewing': 'Reviewing',
-                'in-progress': 'In Progress',
-                'testing': 'Testing',
-                'completed': 'Completed',
-                'cancelled': 'Cancelled'
-            };
-            const pillClass = statusMap[t.status] || 'pill-new';
-            const pillText = statusLabels[t.status] || 'New';
-            const msgCount = t.message_count ?? t.messages?.length ?? 0;
-            const fileCount = t.file_count ?? t.files?.length ?? 0;
-            const created = t.created_at ? formatDate(t.created_at) : '—';
-            const updated = t.updated_at ? timeAgo(t.updated_at) : '';
+        async function loadTicketDetails() {
+            const promises = allTickets.map(async t => {
+                try {
+                    const res = await fetch('/api/ticket/' + t.id, { headers: authHeaders() });
+                    const data = await res.json();
+                    if (data.success) allTicketDetails[t.id] = data.ticket;
+                } catch {}
+            });
+            await Promise.all(promises);
+        }
 
-            const priorityBadge = (t.priority ? '<span class="priority-badge"><i class="fas fa-bolt"></i> Priority</span>' : '');
+        // ── Render Tickets ─────────────────
+        function renderTickets() {
+            let tickets = [...allTickets];
+            if (currentFilter === 'active') tickets = tickets.filter(t => !['completed', 'cancelled'].includes(t.status));
+            else if (currentFilter === 'completed') tickets = tickets.filter(t => t.status === 'completed');
+            else if (currentFilter === 'cancelled') tickets = tickets.filter(t => t.status === 'cancelled');
+
+            if (tickets.length === 0) {
+                const msg = currentFilter === 'all' ? 'No tickets yet.' : `No ${currentFilter} tickets.`;
+                ticketsGrid.innerHTML = `<div class="empty-state" style="grid-column:1/-1;"><i class="fas fa-inbox"></i><p>${msg}</p><p><a href="/#contact">Submit a project</a> to get started!</p></div>`;
+                return;
+            }
+
+            ticketsGrid.innerHTML = tickets.map(t => {
+                const detail = allTicketDetails[t.id] || {};
+                const hasUnread = (detail.messages || []).length > 0 && (detail.messages || []).slice(-1)[0]?.sender === 'admin';
+                return renderTicketCard(t, hasUnread);
+            }).join('');
+        }
+
+        function renderTicketCard(t, hasUnread) {
+            const statusMap = { 'new': 'pill-new', 'reviewing': 'pill-reviewing', 'in-progress': 'pill-in-progress', 'testing': 'pill-testing', 'completed': 'pill-completed', 'cancelled': 'pill-cancelled' };
+            const statusLabels = { 'new': 'New', 'reviewing': 'Reviewing', 'in-progress': 'In Progress', 'testing': 'Testing', 'completed': 'Completed', 'cancelled': 'Cancelled' };
+            const pill = statusMap[t.status] || 'pill-new';
+            const label = statusLabels[t.status] || 'New';
+            const created = formatDate(t.created_at);
+            const updated = t.updated_at ? timeAgo(t.updated_at) : '';
+            const msgCount = t.messages || 0;
+            const fileCount = t.files || 0;
 
             return `
-                <a href="/ticket.html?id=${encodeURIComponent(t.id)}" class="ticket-card">
+                <div class="ticket-card" onclick="openDetail(${t.id})">
+                    ${hasUnread ? '<div class="new-msg-dot" title="New message from admin"></div>' : ''}
                     <div class="ticket-card-top">
-                        <span class="ticket-number">#${escapeHtml(String(t.id))}</span>
+                        <span class="ticket-number">#${t.id}</span>
                         <div class="ticket-card-badges">
-                            <span class="ticket-status-pill ${pillClass}">
-                                <span class="pulse-dot"></span>
-                                ${escapeHtml(pillText)}
-                            </span>
-                            ${priorityBadge}
+                            <span class="ticket-status-pill ${pill}"><span class="pulse-dot"></span> ${esc(label)}</span>
+                            ${t.priority ? '<span class="priority-badge"><i class="fas fa-bolt"></i> Rush</span>' : ''}
                         </div>
                     </div>
-                    <div class="ticket-service">${escapeHtml(t.service || 'Project')}</div>
+                    <div class="ticket-service">${esc(t.service || 'Project')}</div>
                     <div class="ticket-meta">
-                        <span title="Messages"><i class="fas fa-comment"></i> ${msgCount}</span>
-                        <span title="Files"><i class="fas fa-paperclip"></i> ${fileCount}</span>
-                        <span title="Created">${escapeHtml(created)}</span>
+                        <span><i class="fas fa-comment"></i> ${msgCount}</span>
+                        <span><i class="fas fa-paperclip"></i> ${fileCount}</span>
+                        <span><i class="fas fa-calendar"></i> ${esc(created)}</span>
                     </div>
-                    ${updated ? `<div class="ticket-updated">Last updated ${escapeHtml(updated)}</div>` : ''}
-                </a>
+                    ${updated ? `<div class="ticket-updated">Updated ${esc(updated)}</div>` : ''}
+                </div>
             `;
         }
 
-        // ── Refresh ─────────────────────
-        function startRefresh() {
-            stopRefresh();
-            refreshTimer = setInterval(() => {
-                loadProfile();
-                loadTickets();
-            }, REFRESH_INTERVAL);
+        // ── Ticket Detail Overlay ──────────
+        function openDetail(id) {
+            openTicketId = id;
+            renderTicketDetail(id);
+            detailOverlay.classList.add('open');
+            document.body.style.overflow = 'hidden';
         }
 
-        function stopRefresh() {
-            if (refreshTimer) {
-                clearInterval(refreshTimer);
-                refreshTimer = null;
+        function closeDetail() {
+            openTicketId = null;
+            detailOverlay.classList.remove('open');
+            document.body.style.overflow = '';
+        }
+
+        detailOverlay.addEventListener('click', e => { if (e.target === detailOverlay) closeDetail(); });
+        document.addEventListener('keydown', e => { if (e.key === 'Escape' && openTicketId) closeDetail(); });
+
+        function renderTicketDetail(id) {
+            const t = allTicketDetails[id];
+            if (!t) { ticketDetail.innerHTML = '<div style="padding:40px;text-align:center;color:var(--dim);">Loading...</div>'; return; }
+
+            const statusLabels = { 'new': 'New', 'reviewing': 'Reviewing', 'in-progress': 'In Development', 'testing': 'Testing & QA', 'completed': 'Completed', 'cancelled': 'Cancelled' };
+            const statusMap = { 'new': 'pill-new', 'reviewing': 'pill-reviewing', 'in-progress': 'pill-in-progress', 'testing': 'pill-testing', 'completed': 'pill-completed', 'cancelled': 'pill-cancelled' };
+
+            // Progress steps
+            const steps = ['new', 'reviewing', 'in-progress', 'testing', 'completed'];
+            const icons = { 'new': 'fa-inbox', 'reviewing': 'fa-search', 'in-progress': 'fa-code', 'testing': 'fa-flask', 'completed': 'fa-check' };
+            const currentIdx = steps.indexOf(t.status);
+            const isCancelled = t.status === 'cancelled';
+
+            let progressHTML = '<div class="status-progress">';
+            steps.forEach((step, i) => {
+                let dotClass = '';
+                let labelClass = '';
+                if (isCancelled) {
+                    dotClass = ''; // all empty
+                } else if (i < currentIdx) {
+                    dotClass = 'done'; labelClass = 'done';
+                } else if (i === currentIdx) {
+                    dotClass = 'current'; labelClass = 'current';
+                }
+                progressHTML += `
+                    <div class="progress-step">
+                        ${i < steps.length - 1 ? `<div class="progress-line ${i < currentIdx ? 'done' : ''}"></div>` : ''}
+                        <div class="progress-dot ${dotClass}"><i class="fas ${icons[step]}"></i></div>
+                        <span class="progress-label ${labelClass}">${statusLabels[step]}</span>
+                    </div>
+                `;
+            });
+            if (isCancelled) {
+                progressHTML += `<div class="progress-step"><div class="progress-dot cancelled"><i class="fas fa-times"></i></div><span class="progress-label" style="color:var(--red);">Cancelled</span></div>`;
             }
+            progressHTML += '</div>';
+
+            // Status history
+            const history = (t.status_history || []).slice().reverse();
+            let historyHTML = '';
+            if (history.length > 0) {
+                historyHTML = '<div class="status-history">' + history.map(h => `
+                    <div class="history-item">
+                        <div class="history-dot ${h.status}"></div>
+                        <div>
+                            <div class="history-text">Status changed to <strong>${statusLabels[h.status] || h.status}</strong></div>
+                            ${h.message ? `<div class="history-text" style="margin-top:2px;font-size:0.82rem;">${esc(h.message)}</div>` : ''}
+                            <div class="history-time">${formatDateTime(h.timestamp)}</div>
+                        </div>
+                    </div>
+                `).join('') + '</div>';
+            } else {
+                historyHTML = '<p style="color:var(--muted);font-size:0.85rem;">No status changes yet.</p>';
+            }
+
+            // Chat
+            const msgs = t.messages || [];
+            let chatHTML = '';
+            if (msgs.length > 0) {
+                chatHTML = msgs.map(m => `
+                    <div class="chat-msg ${m.sender}">
+                        <div class="msg-sender">${m.sender === 'admin' ? 'JAZEY Team' : 'You'}</div>
+                        ${esc(m.text)}
+                        <div class="msg-time">${formatDateTime(m.timestamp)}</div>
+                    </div>
+                `).join('');
+            } else {
+                chatHTML = '<div class="chat-empty"><i class="fas fa-comments"></i>No messages yet. Say hello!</div>';
+            }
+
+            // Files
+            const files = t.files || [];
+            let filesHTML = '';
+            if (files.length > 0) {
+                filesHTML = '<div class="files-list">' + files.map(f => `
+                    <a href="${esc(f.url)}" target="_blank" class="file-item">
+                        <div class="file-icon"><i class="fas fa-file-download"></i></div>
+                        <span class="file-name">${esc(f.name)}</span>
+                        <span class="file-action"><i class="fas fa-download"></i></span>
+                    </a>
+                `).join('') + '</div>';
+            } else {
+                filesHTML = '<div class="no-files"><i class="fas fa-folder-open"></i>&nbsp; No files delivered yet.</div>';
+            }
+
+            ticketDetail.innerHTML = `
+                <div class="detail-header">
+                    <div class="detail-header-left">
+                        <span class="ticket-number">#${t.id}</span>
+                        <div>
+                            <div class="ticket-service" style="margin-bottom:2px;">${esc(t.service || 'Project')}</div>
+                            <div class="detail-service">For ${esc(t.name)} &middot; Created ${formatDate(t.created_at)}</div>
+                        </div>
+                        <span class="ticket-status-pill ${statusMap[t.status] || 'pill-new'}"><span class="pulse-dot"></span> ${esc(statusLabels[t.status] || t.status)}</span>
+                        ${t.priority ? '<span class="priority-badge"><i class="fas fa-bolt"></i> Rush Order</span>' : ''}
+                    </div>
+                    <button class="detail-close" onclick="closeDetail()"><i class="fas fa-times"></i></button>
+                </div>
+                <div class="detail-body">
+                    <div class="detail-section">
+                        <div class="detail-section-title"><i class="fas fa-tasks"></i> Progress</div>
+                        ${progressHTML}
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-section-title"><i class="fas fa-history"></i> Status History</div>
+                        ${historyHTML}
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-section-title"><i class="fas fa-comments"></i> Messages (${msgs.length})</div>
+                        <div class="chat-area">
+                            <div class="chat-messages" id="chatMessages-${t.id}">${chatHTML}</div>
+                            <div class="chat-input">
+                                <input type="text" id="chatInput-${t.id}" placeholder="Type a message..." maxlength="1000" onkeydown="if(event.key==='Enter')sendChat(${t.id})">
+                                <button class="chat-send" onclick="sendChat(${t.id})"><i class="fas fa-paper-plane"></i></button>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="detail-section">
+                        <div class="detail-section-title"><i class="fas fa-file-download"></i> Deliverables (${files.length})</div>
+                        ${filesHTML}
+                    </div>
+                </div>
+            `;
+
+            // Scroll chat to bottom
+            setTimeout(() => {
+                const chatEl = document.getElementById('chatMessages-' + t.id);
+                if (chatEl) chatEl.scrollTop = chatEl.scrollHeight;
+            }, 50);
         }
 
-        // ── Session restore ──────────────
-        function tryRestoreSession() {
+        // ── Send Chat ──────────────────────
+        async function sendChat(id) {
+            const input = document.getElementById('chatInput-' + id);
+            if (!input) return;
+            const text = input.value.trim();
+            if (!text) return;
+            input.value = '';
+            input.disabled = true;
+
+            try {
+                const res = await fetch('/api/ticket/' + id + '/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Message sent!', 'success');
+                    // Refresh detail
+                    const r2 = await fetch('/api/ticket/' + id);
+                    const d2 = await r2.json();
+                    if (d2.success) {
+                        allTicketDetails[id] = d2.ticket;
+                        renderTicketDetail(id);
+                    }
+                } else {
+                    showToast(data.error || 'Failed to send', 'error');
+                }
+            } catch { showToast('Connection error', 'error'); }
+            finally { input.disabled = false; input.focus(); }
+        }
+
+        // ── Activity Feed ──────────────────
+        function buildActivity() {
+            const events = [];
+
+            allTickets.forEach(t => {
+                const detail = allTicketDetails[t.id];
+                if (!detail) return;
+
+                // Status history events
+                (detail.status_history || []).forEach(h => {
+                    events.push({
+                        type: 'status',
+                        ticketId: t.id,
+                        text: `Ticket <strong>#${t.id}</strong> status changed to <strong>${h.status}</strong>`,
+                        time: h.timestamp
+                    });
+                });
+
+                // Message events
+                (detail.messages || []).forEach(m => {
+                    events.push({
+                        type: 'msg',
+                        ticketId: t.id,
+                        text: `${m.sender === 'admin' ? '<strong>JAZEY Team</strong>' : '<strong>You</strong>'} sent a message on <strong>#${t.id}</strong>`,
+                        preview: m.text.length > 80 ? m.text.substring(0, 80) + '...' : m.text,
+                        time: m.timestamp
+                    });
+                });
+
+                // File events
+                (detail.files || []).forEach(f => {
+                    events.push({
+                        type: 'file',
+                        ticketId: t.id,
+                        text: `File <strong>${esc(f.name)}</strong> delivered for <strong>#${t.id}</strong>`,
+                        time: detail.updated_at || detail.created_at
+                    });
+                });
+            });
+
+            events.sort((a, b) => new Date(b.time) - new Date(a.time));
+            const limited = events.slice(0, 50);
+
+            if (limited.length === 0) {
+                activityFeed.innerHTML = '<div class="empty-state"><i class="fas fa-bell"></i><p>No activity yet.</p><p>Submit a project to see updates here.</p></div>';
+                return;
+            }
+
+            activityFeed.innerHTML = limited.map(e => {
+                const iconClass = e.type === 'msg' ? 'msg' : e.type === 'file' ? 'file' : 'status';
+                const icon = e.type === 'msg' ? 'fa-comment' : e.type === 'file' ? 'fa-file' : 'fa-exchange-alt';
+                return `
+                    <div class="activity-item" onclick="openDetail(${e.ticketId})">
+                        <div class="activity-icon ${iconClass}"><i class="fas ${icon}"></i></div>
+                        <div class="activity-content">
+                            <p>${e.text}</p>
+                            ${e.preview ? `<p style="font-size:0.82rem;color:var(--muted);margin-top:4px;">"${esc(e.preview)}"</p>` : ''}
+                            <div class="activity-time">${timeAgo(e.time)}</div>
+                        </div>
+                    </div>
+                `;
+            }).join('');
+        }
+
+        // ── Tabs ───────────────────────────
+        document.querySelectorAll('.portal-tab').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.portal-tab').forEach(b => b.classList.remove('active'));
+                document.querySelectorAll('.tab-panel').forEach(p => p.classList.remove('active'));
+                btn.classList.add('active');
+                document.getElementById('panel-' + btn.dataset.tab).classList.add('active');
+            });
+        });
+
+        // ── Filters ────────────────────────
+        document.querySelectorAll('.filter-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                document.querySelectorAll('.filter-btn').forEach(b => b.classList.remove('active'));
+                btn.classList.add('active');
+                currentFilter = btn.dataset.filter;
+                renderTickets();
+            });
+        });
+
+        // ── Refresh ────────────────────────
+        function startRefresh() { stopRefresh(); refreshTimer = setInterval(() => loadAll(), REFRESH_MS); }
+        function stopRefresh() { if (refreshTimer) { clearInterval(refreshTimer); refreshTimer = null; } }
+
+        // ── Session Restore ────────────────
+        document.addEventListener('DOMContentLoaded', () => {
             const user = sessionStorage.getItem(STORAGE_USER);
             const pass = sessionStorage.getItem(STORAGE_PASS);
             if (user && pass) {
-                // Validate session with profile or tickets
-                fetch('/api/client/profile', { headers: getAuthHeaders() })
+                fetch('/api/client/profile', { headers: { 'X-Client-Username': user, 'X-Client-Password': pass } })
                     .then(r => r.json())
-                    .then(data => {
-                        if (data.success) {
-                            setLoggedIn(user, pass);
-                        } else {
-                            setLoggedOut();
-                        }
-                    })
+                    .then(d => { if (d.success) setLoggedIn(user, pass); else setLoggedOut(); })
                     .catch(() => setLoggedOut());
             }
-        }
+        });
 
-        document.addEventListener('DOMContentLoaded', tryRestoreSession);
-
-        // ── Utils ────────────────────────
-        function timeAgo(dateStr) {
-            const d = new Date(dateStr);
-            const now = new Date();
-            const diff = now - d;
-            const mins = Math.floor(diff / 60000);
-            const hours = Math.floor(diff / 3600000);
-            const days = Math.floor(diff / 86400000);
-            if (mins < 1) return 'just now';
-            if (mins < 60) return mins + 'm ago';
-            if (hours < 24) return hours + 'h ago';
-            if (days < 7) return days + 'd ago';
+        // ── Utils ──────────────────────────
+        function timeAgo(ds) {
+            const d = new Date(ds); const now = new Date(); const diff = now - d;
+            const m = Math.floor(diff / 60000); const h = Math.floor(diff / 3600000); const dy = Math.floor(diff / 86400000);
+            if (m < 1) return 'just now';
+            if (m < 60) return m + 'm ago';
+            if (h < 24) return h + 'h ago';
+            if (dy < 30) return dy + 'd ago';
             return d.toLocaleDateString();
         }
 
-        function formatDate(dateStr) {
-            return new Date(dateStr).toLocaleDateString('en-US', {
-                month: 'short', day: 'numeric', year: 'numeric'
-            });
+        function formatDate(ds) {
+            return new Date(ds).toLocaleDateString('en-US', { month: 'short', day: 'numeric', year: 'numeric' });
         }
 
-        function escapeHtml(str) {
-            if (str == null) return '';
-            const d = document.createElement('div');
-            d.textContent = String(str);
-            return d.innerHTML;
+        function formatDateTime(ds) {
+            const d = new Date(ds);
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' at ' + d.toLocaleTimeString('en-US', { hour: 'numeric', minute: '2-digit' });
+        }
+
+        function esc(s) {
+            if (s == null) return '';
+            const d = document.createElement('div'); d.textContent = String(s); return d.innerHTML;
+        }
+
+        function showToast(msg, type = 'info') {
+            const c = document.getElementById('toastContainer');
+            const t = document.createElement('div');
+            t.className = 'toast ' + type;
+            t.textContent = msg;
+            c.appendChild(t);
+            setTimeout(() => { t.style.opacity = '0'; setTimeout(() => t.remove(), 300); }, 3000);
         }
     </script>
 </body>
