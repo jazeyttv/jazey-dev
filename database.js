@@ -22,7 +22,9 @@ class JsonDatabase {
             coupons: [],
             nextCouponId: 1,
             changelog: [],
-            nextChangelogId: 1
+            nextChangelogId: 1,
+            users: [],
+            nextUserId: 1
         };
         this.load();
     }
@@ -47,6 +49,9 @@ class JsonDatabase {
                 // Migrate: ensure changelog array and counter exist
                 if (!this.data.changelog) this.data.changelog = [];
                 if (!this.data.nextChangelogId) this.data.nextChangelogId = 1;
+                // Migrate: ensure users array and counter exist
+                if (!this.data.users) this.data.users = [];
+                if (!this.data.nextUserId) this.data.nextUserId = 1;
             } else {
                 this.save();
             }
@@ -79,6 +84,7 @@ class JsonDatabase {
             status: 'new',
             notes: '',
             messages: [],
+            user_id: submission.user_id || null,
             created_at: new Date().toISOString()
         };
         this.data.submissions.unshift(entry);
@@ -185,6 +191,69 @@ class JsonDatabase {
         this.data.submissions.splice(index, 1);
         this.save();
         return true;
+    }
+
+    // ── Users ────────────────────────────
+    addUser({ username, password, role, email, discord }) {
+        const id = this.data.nextUserId++;
+        const user = {
+            id,
+            username: (username || '').trim().toLowerCase(),
+            password: (password || ''),
+            role: role || 'client',
+            email: email || null,
+            discord: discord || null,
+            created_at: new Date().toISOString()
+        };
+        this.data.users.push(user);
+        this.save();
+        return user;
+    }
+
+    getUser(username) {
+        const u = (username || '').trim().toLowerCase();
+        return this.data.users.find(x => x.username === u) || null;
+    }
+
+    getUserById(id) {
+        return this.data.users.find(x => x.id === parseInt(id)) || null;
+    }
+
+    getUsers(role) {
+        if (role) {
+            return this.data.users.filter(x => x.role === role);
+        }
+        return [...this.data.users];
+    }
+
+    getUserByDiscord(discord) {
+        const d = (discord || '').trim().toLowerCase();
+        return this.data.users.find(x => (x.discord || '').toLowerCase() === d) || null;
+    }
+
+    deleteUser(id) {
+        const index = this.data.users.findIndex(x => x.id === parseInt(id));
+        if (index === -1) return false;
+        if (this.data.users[index].role === 'owner') return false; // Cannot delete owner
+        this.data.users.splice(index, 1);
+        this.save();
+        return true;
+    }
+
+    updateUser(id, updates) {
+        const index = this.data.users.findIndex(x => x.id === parseInt(id));
+        if (index === -1) return null;
+        const user = this.data.users[index];
+        if (updates.password !== undefined) user.password = updates.password;
+        if (updates.email !== undefined) user.email = updates.email;
+        if (updates.discord !== undefined) user.discord = updates.discord;
+        this.save();
+        return user;
+    }
+
+    getSubmissionsByDiscord(discord) {
+        const d = (discord || '').trim().toLowerCase();
+        return this.data.submissions.filter(s => (s.discord || '').toLowerCase() === d);
     }
 
     // ── Blog Posts ──────────────────────

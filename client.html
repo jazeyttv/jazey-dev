@@ -1,0 +1,608 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>JAZEY — Client Portal</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
+    <style>
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        :root {
+            --bg: #060609;
+            --bg2: #0c0c14;
+            --card: #111119;
+            --card2: #16161f;
+            --border: rgba(255,255,255,0.06);
+            --border2: rgba(255,255,255,0.1);
+            --text: #ffffff;
+            --dim: #8888a8;
+            --muted: #555570;
+            --accent: #6C63FF;
+            --accent2: #00D4FF;
+            --green: #10b981;
+            --blue: #3b82f6;
+            --yellow: #f59e0b;
+            --red: #ef4444;
+            --purple: #8b5cf6;
+            --gradient: linear-gradient(135deg, #6C63FF 0%, #00D4FF 100%);
+        }
+
+        body {
+            font-family: 'Inter', -apple-system, sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            -webkit-font-smoothing: antialiased;
+        }
+
+        /* Ambient BG */
+        .ambient {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+        }
+
+        .ambient-orb {
+            position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.15;
+        }
+
+        .ambient-orb-1 { width: 600px; height: 600px; background: #6C63FF; top: -200px; right: -150px; animation: ambFloat 12s ease-in-out infinite; }
+        .ambient-orb-2 { width: 400px; height: 400px; background: #00D4FF; bottom: -100px; left: -100px; animation: ambFloat 15s ease-in-out infinite reverse; }
+        .ambient-orb-3 { width: 300px; height: 300px; background: #4B0082; top: 40%; left: 30%; animation: ambFloat 18s ease-in-out infinite; }
+
+        @keyframes ambFloat { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-40px) scale(1.05); } }
+
+        /* Layout */
+        .wrapper { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
+
+        /* ── Login Screen ────────────── */
+        .login-screen {
+            flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 20px;
+        }
+
+        .login-screen.hidden { display: none; }
+
+        .login-card {
+            width: 100%; max-width: 440px;
+            background: var(--card); border: 1px solid var(--border); border-radius: 24px;
+            padding: 40px 36px; box-shadow: 0 25px 80px rgba(0,0,0,0.4);
+        }
+
+        .login-header { text-align: center; margin-bottom: 32px; }
+
+        .login-icon {
+            width: 72px; height: 72px; margin: 0 auto 20px;
+            background: var(--card2); border: 1px solid var(--border2);
+            border-radius: 18px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.6rem;
+        }
+
+        .login-icon i { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .login-header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.75rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+        .login-header p { color: var(--dim); font-size: 0.9rem; line-height: 1.5; }
+
+        .login-form { display: flex; flex-direction: column; gap: 18px; }
+
+        .login-form label { font-size: 0.8rem; font-weight: 600; color: var(--dim); }
+
+        .login-form input {
+            padding: 14px 18px; background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 12px; color: #fff; font-size: 1rem; font-family: 'Inter', sans-serif;
+            outline: none; transition: 0.3s;
+        }
+
+        .login-form input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,0.15); }
+        .login-form input::placeholder { color: var(--muted); }
+
+        .login-btn {
+            padding: 16px 24px; background: var(--gradient); border: none; border-radius: 14px;
+            color: #fff; font-weight: 700; font-size: 1rem; cursor: pointer; transition: 0.3s;
+            font-family: 'Inter', sans-serif; margin-top: 8px;
+        }
+
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,0.35); }
+        .login-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
+
+        .login-error {
+            display: none; padding: 14px 18px; background: rgba(239,68,68,0.08);
+            border: 1px solid rgba(239,68,68,0.2); border-radius: 12px;
+            color: var(--red); font-size: 0.9rem;
+        }
+
+        .login-error.show { display: block; animation: fadeIn 0.3s ease; }
+
+        .login-link {
+            text-align: center; margin-top: 24px;
+            font-size: 0.88rem; color: var(--dim);
+        }
+
+        .login-link a { color: var(--accent2); text-decoration: none; font-weight: 500; }
+        .login-link a:hover { text-decoration: underline; }
+
+        /* ── Dashboard ────────────── */
+        .dashboard { display: none; flex: 1; flex-direction: column; }
+        .dashboard.visible { display: flex; }
+
+        /* Nav */
+        .nav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 32px; border-bottom: 1px solid var(--border);
+            background: rgba(6,6,9,0.8); backdrop-filter: blur(20px);
+        }
+
+        .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
+        .nav-brand h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; letter-spacing: 2px; }
+        .nav-badge { padding: 3px 10px; background: var(--gradient); border-radius: 6px; font-size: 0.6rem; font-weight: 700; letter-spacing: 1px; }
+
+        .nav-links { display: flex; align-items: center; gap: 20px; }
+        .nav-links a { color: var(--dim); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: 0.3s; }
+        .nav-links a:hover { color: var(--accent); }
+
+        .btn-logout {
+            padding: 8px 18px; background: rgba(239,68,68,0.15); border: 1px solid rgba(239,68,68,0.25);
+            border-radius: 10px; color: var(--red); font-size: 0.85rem; font-weight: 600; cursor: pointer;
+            font-family: 'Inter', sans-serif; transition: 0.3s;
+        }
+
+        .btn-logout:hover { background: rgba(239,68,68,0.25); }
+
+        /* Dashboard Content */
+        .dashboard-main { flex: 1; padding: 36px 32px; max-width: 1200px; margin: 0 auto; width: 100%; }
+
+        .dashboard-header { margin-bottom: 32px; }
+
+        .dashboard-header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 1.9rem; font-weight: 800; margin-bottom: 6px; letter-spacing: -0.5px; }
+        .dashboard-header h1 span { color: var(--accent2); }
+        .dashboard-header p { color: var(--dim); font-size: 0.95rem; }
+
+        /* Tickets Grid */
+        .tickets-grid {
+            display: grid; grid-template-columns: repeat(auto-fill, minmax(320px, 1fr)); gap: 20px;
+        }
+
+        .ticket-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 18px;
+            padding: 24px; cursor: pointer; transition: 0.3s; text-decoration: none; color: inherit;
+            display: block;
+        }
+
+        .ticket-card:hover {
+            border-color: rgba(108,99,255,0.3); transform: translateY(-3px);
+            box-shadow: 0 12px 40px rgba(0,0,0,0.3);
+        }
+
+        .ticket-card-top {
+            display: flex; align-items: flex-start; justify-content: space-between; gap: 12px; margin-bottom: 14px; flex-wrap: wrap;
+        }
+
+        .ticket-card-badges { display: flex; align-items: center; gap: 8px; flex-wrap: wrap; }
+
+        .ticket-number { font-family: 'Space Grotesk', sans-serif; font-size: 1.5rem; font-weight: 800; color: var(--accent2); }
+        .ticket-status-pill {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 6px 14px; border-radius: 50px; font-size: 0.72rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; flex-shrink: 0;
+        }
+
+        .ticket-status-pill .pulse-dot { width: 6px; height: 6px; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+
+        .pill-new { background: rgba(108,99,255,0.12); color: var(--accent); }
+        .pill-new .pulse-dot { background: var(--accent); }
+        .pill-reviewing { background: rgba(245,158,11,0.12); color: var(--yellow); }
+        .pill-reviewing .pulse-dot { background: var(--yellow); }
+        .pill-in-progress { background: rgba(0,212,255,0.12); color: var(--accent2); }
+        .pill-in-progress .pulse-dot { background: var(--accent2); }
+        .pill-testing { background: rgba(139,92,246,0.12); color: var(--purple); }
+        .pill-testing .pulse-dot { background: var(--purple); }
+        .pill-completed { background: rgba(16,185,129,0.12); color: var(--green); }
+        .pill-completed .pulse-dot { background: var(--green); }
+        .pill-cancelled { background: rgba(239,68,68,0.12); color: var(--red); }
+        .pill-cancelled .pulse-dot { background: var(--red); }
+
+        .ticket-service { font-size: 0.95rem; font-weight: 600; color: var(--text); margin-bottom: 10px; }
+
+        .ticket-meta {
+            display: flex; align-items: center; gap: 14px; flex-wrap: wrap;
+            font-size: 0.8rem; color: var(--muted);
+        }
+
+        .ticket-meta span { display: inline-flex; align-items: center; gap: 6px; }
+        .ticket-meta i { font-size: 0.75rem; color: var(--dim); }
+
+        .ticket-updated { font-size: 0.78rem; color: var(--dim); margin-top: 12px; }
+
+        .priority-badge {
+            display: inline-flex; align-items: center; gap: 4px;
+            padding: 3px 10px; background: rgba(245,158,11,0.12);
+            border-radius: 50px; font-size: 0.65rem; font-weight: 700;
+            color: var(--yellow); text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
+        .empty-state {
+            text-align: center; padding: 60px 24px; color: var(--dim);
+            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+        }
+
+        .empty-state i { font-size: 3rem; margin-bottom: 16px; opacity: 0.3; display: block; }
+        .empty-state p { font-size: 1rem; margin-bottom: 8px; color: var(--text); }
+        .empty-state a { color: var(--accent2); text-decoration: none; font-weight: 500; }
+        .empty-state a:hover { text-decoration: underline; }
+
+        /* Refresh badge */
+        .refresh-badge {
+            text-align: center; margin-top: 24px; font-size: 0.75rem; color: var(--muted);
+        }
+
+        .refresh-badge i { margin-right: 4px; }
+
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* Footer */
+        .page-footer {
+            text-align: center; padding: 24px; color: var(--muted); font-size: 0.8rem;
+            border-top: 1px solid var(--border);
+        }
+
+        .page-footer a { color: var(--accent2); text-decoration: none; }
+        .page-footer a:hover { text-decoration: underline; }
+
+        /* Responsive */
+        @media (max-width: 768px) {
+            .nav { padding: 14px 16px; }
+            .nav-links { gap: 12px; }
+            .dashboard-main { padding: 24px 16px; }
+            .tickets-grid { grid-template-columns: 1fr; }
+            .login-card { padding: 32px 24px; }
+            .dashboard-header h1 { font-size: 1.5rem; }
+        }
+    </style>
+</head>
+<body>
+
+    <!-- Ambient Background -->
+    <div class="ambient">
+        <div class="ambient-orb ambient-orb-1"></div>
+        <div class="ambient-orb ambient-orb-2"></div>
+        <div class="ambient-orb ambient-orb-3"></div>
+    </div>
+
+    <div class="wrapper">
+        <!-- Login Screen -->
+        <div class="login-screen" id="loginScreen">
+            <div class="login-card">
+                <div class="login-header">
+                    <div class="login-icon"><i class="fas fa-user-lock"></i></div>
+                    <h1>Client Portal</h1>
+                    <p>Log in with your Discord tag and the password you received after submitting a project.</p>
+                </div>
+
+                <div class="login-error" id="loginError"></div>
+
+                <form class="login-form" id="loginForm">
+                    <label for="username">Discord Tag</label>
+                    <input type="text" id="username" name="username" placeholder="e.g. username#1234" autocomplete="username" required>
+
+                    <label for="password">Password</label>
+                    <input type="password" id="password" name="password" placeholder="Enter your password" autocomplete="current-password" required>
+
+                    <button type="submit" class="login-btn" id="loginBtn"><i class="fas fa-sign-in-alt"></i> Log in</button>
+                </form>
+
+                <p class="login-link">Don't have an account? <a href="/#contact">Submit a project first!</a></p>
+            </div>
+        </div>
+
+        <!-- Dashboard -->
+        <div class="dashboard" id="dashboard">
+            <nav class="nav">
+                <a href="/" class="nav-brand">
+                    <h2>JAZEY</h2>
+                    <span class="nav-badge">CLIENT</span>
+                </a>
+                <div class="nav-links">
+                    <a href="/"><i class="fas fa-home"></i> Home</a>
+                    <a href="/ticket.html"><i class="fas fa-ticket-alt"></i> Ticket Tracker</a>
+                    <button class="btn-logout" id="logoutBtn"><i class="fas fa-sign-out-alt"></i> Logout</button>
+                </div>
+            </nav>
+
+            <main class="dashboard-main">
+                <div class="dashboard-header">
+                    <h1>Welcome back, <span id="welcomeUser">—</span></h1>
+                    <p id="welcomeSubtitle">Your active tickets and project status.</p>
+                </div>
+
+                <div class="tickets-grid" id="ticketsGrid"></div>
+
+                <div class="refresh-badge"><i class="fas fa-sync-alt"></i> Auto-refreshes every 30 seconds</div>
+            </main>
+
+            <div class="page-footer">
+                <p>&copy; 2026 <a href="/">JAZEY Development</a> — Turning Ideas Into Legendary Servers.</p>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        const STORAGE_USER = 'jazey_client_user';
+        const STORAGE_PASS = 'jazey_client_pass';
+        const REFRESH_INTERVAL = 30000; // 30 seconds
+
+        const loginScreen = document.getElementById('loginScreen');
+        const dashboard = document.getElementById('dashboard');
+        const loginForm = document.getElementById('loginForm');
+        const loginBtn = document.getElementById('loginBtn');
+        const loginError = document.getElementById('loginError');
+        const usernameInput = document.getElementById('username');
+        const passwordInput = document.getElementById('password');
+        const logoutBtn = document.getElementById('logoutBtn');
+        const welcomeUser = document.getElementById('welcomeUser');
+        const welcomeSubtitle = document.getElementById('welcomeSubtitle');
+        const ticketsGrid = document.getElementById('ticketsGrid');
+
+        let refreshTimer = null;
+
+        // ── Auth helpers ─────────────────
+        function getAuthHeaders() {
+            const user = sessionStorage.getItem(STORAGE_USER);
+            const pass = sessionStorage.getItem(STORAGE_PASS);
+            return {
+                'X-Client-Username': user || '',
+                'X-Client-Password': pass || ''
+            };
+        }
+
+        function showLoginError(msg) {
+            loginError.textContent = msg;
+            loginError.classList.add('show');
+        }
+
+        function hideLoginError() {
+            loginError.classList.remove('show');
+        }
+
+        function setLoggedIn(user, password) {
+            sessionStorage.setItem(STORAGE_USER, user);
+            sessionStorage.setItem(STORAGE_PASS, password || passwordInput.value);
+            loginScreen.classList.add('hidden');
+            dashboard.classList.add('visible');
+            welcomeUser.textContent = user;
+            loadProfile();
+            loadTickets();
+            startRefresh();
+        }
+
+        function setLoggedOut() {
+            sessionStorage.removeItem(STORAGE_USER);
+            sessionStorage.removeItem(STORAGE_PASS);
+            dashboard.classList.remove('visible');
+            loginScreen.classList.remove('hidden');
+            usernameInput.value = '';
+            passwordInput.value = '';
+            hideLoginError();
+            stopRefresh();
+        }
+
+        // ── Login ───────────────────────
+        loginForm.addEventListener('submit', async (e) => {
+            e.preventDefault();
+            hideLoginError();
+
+            const username = usernameInput.value.trim();
+            const password = passwordInput.value;
+
+            if (!username || !password) {
+                showLoginError('Please enter your Discord tag and password.');
+                return;
+            }
+
+            loginBtn.disabled = true;
+            loginBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Signing in...';
+
+            try {
+                const res = await fetch('/api/client/login', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ username, password })
+                });
+
+                const data = await res.json();
+
+                if (data.success) {
+                    setLoggedIn(username);
+                } else {
+                    showLoginError(data.error || 'Invalid credentials. Please try again.');
+                    passwordInput.value = '';
+                    passwordInput.focus();
+                }
+            } catch (err) {
+                showLoginError('Connection error. Please try again.');
+            } finally {
+                loginBtn.disabled = false;
+                loginBtn.innerHTML = '<i class="fas fa-sign-in-alt"></i> Log in';
+            }
+        });
+
+        // ── Logout ──────────────────────
+        logoutBtn.addEventListener('click', setLoggedOut);
+
+        // ── Profile ─────────────────────
+        async function loadProfile() {
+            try {
+                const res = await fetch('/api/client/profile', { headers: getAuthHeaders() });
+                const data = await res.json();
+                if (data.success && data.profile) {
+                    const p = data.profile;
+                    const active = p.active_count ?? p.activeCount ?? 0;
+                    const total = p.total_count ?? p.totalCount ?? 0;
+                    welcomeSubtitle.textContent = `${active} active of ${total} total ticket${total === 1 ? '' : 's'}`;
+                }
+            } catch (e) {
+                welcomeSubtitle.textContent = 'Your active tickets and project status.';
+            }
+        }
+
+        // ── Tickets ─────────────────────
+        async function loadTickets() {
+            try {
+                const res = await fetch('/api/client/tickets', { headers: getAuthHeaders() });
+                const data = await res.json();
+
+                if (!data.success) {
+                    if (res.status === 401) {
+                        setLoggedOut();
+                        return;
+                    }
+                    ticketsGrid.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1/-1;">
+                            <i class="fas fa-exclamation-triangle"></i>
+                            <p>Could not load tickets.</p>
+                            <p>${escapeHtml(data.error || 'Please try again later.')}</p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                const tickets = data.tickets || [];
+
+                if (tickets.length === 0) {
+                    ticketsGrid.innerHTML = `
+                        <div class="empty-state" style="grid-column: 1/-1;">
+                            <i class="fas fa-inbox"></i>
+                            <p>No tickets yet.</p>
+                            <p>Submit a project to get started! <a href="/#contact">Contact us</a></p>
+                        </div>
+                    `;
+                    return;
+                }
+
+                ticketsGrid.innerHTML = tickets.map(t => renderTicketCard(t)).join('');
+            } catch (err) {
+                ticketsGrid.innerHTML = `
+                    <div class="empty-state" style="grid-column: 1/-1;">
+                        <i class="fas fa-wifi"></i>
+                        <p>Connection error.</p>
+                        <p>Please check your connection and try again.</p>
+                    </div>
+                `;
+            }
+        }
+
+        function renderTicketCard(t) {
+            const statusMap = {
+                'new': 'pill-new',
+                'reviewing': 'pill-reviewing',
+                'in-progress': 'pill-in-progress',
+                'testing': 'pill-testing',
+                'completed': 'pill-completed',
+                'cancelled': 'pill-cancelled'
+            };
+            const statusLabels = {
+                'new': 'New',
+                'reviewing': 'Reviewing',
+                'in-progress': 'In Progress',
+                'testing': 'Testing',
+                'completed': 'Completed',
+                'cancelled': 'Cancelled'
+            };
+            const pillClass = statusMap[t.status] || 'pill-new';
+            const pillText = statusLabels[t.status] || 'New';
+            const msgCount = t.message_count ?? t.messages?.length ?? 0;
+            const fileCount = t.file_count ?? t.files?.length ?? 0;
+            const created = t.created_at ? formatDate(t.created_at) : '—';
+            const updated = t.updated_at ? timeAgo(t.updated_at) : '';
+
+            const priorityBadge = (t.priority ? '<span class="priority-badge"><i class="fas fa-bolt"></i> Priority</span>' : '');
+
+            return `
+                <a href="/ticket.html?id=${encodeURIComponent(t.id)}" class="ticket-card">
+                    <div class="ticket-card-top">
+                        <span class="ticket-number">#${escapeHtml(String(t.id))}</span>
+                        <div class="ticket-card-badges">
+                            <span class="ticket-status-pill ${pillClass}">
+                                <span class="pulse-dot"></span>
+                                ${escapeHtml(pillText)}
+                            </span>
+                            ${priorityBadge}
+                        </div>
+                    </div>
+                    <div class="ticket-service">${escapeHtml(t.service || 'Project')}</div>
+                    <div class="ticket-meta">
+                        <span title="Messages"><i class="fas fa-comment"></i> ${msgCount}</span>
+                        <span title="Files"><i class="fas fa-paperclip"></i> ${fileCount}</span>
+                        <span title="Created">${escapeHtml(created)}</span>
+                    </div>
+                    ${updated ? `<div class="ticket-updated">Last updated ${escapeHtml(updated)}</div>` : ''}
+                </a>
+            `;
+        }
+
+        // ── Refresh ─────────────────────
+        function startRefresh() {
+            stopRefresh();
+            refreshTimer = setInterval(() => {
+                loadProfile();
+                loadTickets();
+            }, REFRESH_INTERVAL);
+        }
+
+        function stopRefresh() {
+            if (refreshTimer) {
+                clearInterval(refreshTimer);
+                refreshTimer = null;
+            }
+        }
+
+        // ── Session restore ──────────────
+        function tryRestoreSession() {
+            const user = sessionStorage.getItem(STORAGE_USER);
+            const pass = sessionStorage.getItem(STORAGE_PASS);
+            if (user && pass) {
+                // Validate session with profile or tickets
+                fetch('/api/client/profile', { headers: getAuthHeaders() })
+                    .then(r => r.json())
+                    .then(data => {
+                        if (data.success) {
+                            setLoggedIn(user, pass);
+                        } else {
+                            setLoggedOut();
+                        }
+                    })
+                    .catch(() => setLoggedOut());
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', tryRestoreSession);
+
+        // ── Utils ────────────────────────
+        function timeAgo(dateStr) {
+            const d = new Date(dateStr);
+            const now = new Date();
+            const diff = now - d;
+            const mins = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            if (mins < 1) return 'just now';
+            if (mins < 60) return mins + 'm ago';
+            if (hours < 24) return hours + 'h ago';
+            if (days < 7) return days + 'd ago';
+            return d.toLocaleDateString();
+        }
+
+        function formatDate(dateStr) {
+            return new Date(dateStr).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric'
+            });
+        }
+
+        function escapeHtml(str) {
+            if (str == null) return '';
+            const d = document.createElement('div');
+            d.textContent = String(str);
+            return d.innerHTML;
+        }
+    </script>
+</body>
+</html>

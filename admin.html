@@ -457,6 +457,7 @@
                 <button class="admin-tab" data-tab="changelog"><i class="fas fa-scroll"></i>&nbsp; Changelog</button>
                 <button class="admin-tab" data-tab="analytics"><i class="fas fa-chart-line"></i>&nbsp; Analytics</button>
                 <button class="admin-tab" data-tab="blog"><i class="fas fa-pen-fancy"></i>&nbsp; Blog Manager</button>
+                <button class="admin-tab" data-tab="users" id="usersTab" style="display:none;"><i class="fas fa-users-cog"></i>&nbsp; Users</button>
             </div>
 
             <!-- Tab: Overview -->
@@ -656,6 +657,23 @@
                     <div id="analyticsDeviceSplit" style="display: flex; flex-direction: column; gap: 12px;"></div>
                 </div>
             </div>
+
+            <!-- Tab: Users (Owner Only) -->
+            <div class="tab-content" id="tab-users">
+                <div class="blog-form">
+                    <h4><i class="fas fa-user-plus"></i>&nbsp; Create Admin Account</h4>
+                    <input type="text" id="newAdminUsername" placeholder="Username (3+ characters)">
+                    <input type="password" id="newAdminPassword" placeholder="Password (4+ characters)">
+                    <button class="blog-submit-btn" id="createAdminBtn"><i class="fas fa-plus"></i>&nbsp; Create Admin</button>
+                </div>
+                <div class="toolbar"><h3>Admin & Owner Accounts</h3></div>
+                <div class="table-container">
+                    <table>
+                        <thead><tr><th>#</th><th>Username</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead>
+                        <tbody id="usersBody"></tbody>
+                    </table>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -726,6 +744,7 @@
 
         let adminUsername = '';
         let adminPassword = '';
+        let adminRole = '';
         let currentSubmissionId = null;
         let currentModalFiles = [];
         let dailyChartInstance = null;
@@ -749,6 +768,7 @@
                 const target = tab.dataset.tab;
                 document.getElementById('tab-' + target).classList.add('active');
                 if (target === 'blog') loadBlogPosts();
+                else if (target === 'users') loadUsers();
                 else if (target === 'kanban') loadKanban();
                 else if (target === 'reviews') loadReviews();
                 else if (target === 'coupons') loadCoupons();
@@ -767,12 +787,15 @@
 
         const savedUser = sessionStorage.getItem('jazey_admin_user');
         const savedPass = sessionStorage.getItem('jazey_admin_pass');
+        const savedRole = sessionStorage.getItem('jazey_admin_role');
         if (savedUser && savedPass) {
             adminUsername = savedUser;
             adminPassword = savedPass;
+            adminRole = savedRole || 'admin';
             loginScreen.classList.add('hidden');
             dashboard.classList.add('active');
             loadDashboard();
+            if (adminRole === 'owner') document.getElementById('usersTab').style.display = '';
         }
 
         loginBtn.addEventListener('click', login);
@@ -791,14 +814,18 @@
                     body: JSON.stringify({ username: user, password: pass })
                 });
 
-                if (res.ok) {
+                const loginData = await res.json();
+                if (loginData.success) {
                     adminUsername = user;
                     adminPassword = pass;
+                    adminRole = loginData.role || 'admin';
                     sessionStorage.setItem('jazey_admin_user', user);
                     sessionStorage.setItem('jazey_admin_pass', pass);
+                    sessionStorage.setItem('jazey_admin_role', adminRole);
                     loginScreen.classList.add('hidden');
                     dashboard.classList.add('active');
                     loadDashboard();
+                    if (adminRole === 'owner') document.getElementById('usersTab').style.display = '';
                 } else {
                     loginError.style.display = 'block';
                     loginPassword.value = '';
@@ -813,8 +840,10 @@
         document.getElementById('logoutBtn').addEventListener('click', () => {
             sessionStorage.removeItem('jazey_admin_user');
             sessionStorage.removeItem('jazey_admin_pass');
+            sessionStorage.removeItem('jazey_admin_role');
             adminUsername = '';
             adminPassword = '';
+            adminRole = '';
             dashboard.classList.remove('active');
             loginScreen.classList.remove('hidden');
             loginUsername.value = '';
@@ -1581,6 +1610,56 @@
         }
 
         setInterval(() => { if (dashboard.classList.contains('active')) loadDashboard(); }, 30000);
+
+        // ── Users Management (Owner) ─────
+        async function loadUsers() {
+            try {
+                const res = await fetch('/api/admin/users', { headers: apiHeaders() });
+                const data = await res.json();
+                const tbody = document.getElementById('usersBody');
+                if (!data.success || !data.users || data.users.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><i class="fas fa-users"></i><p>No users found.</p></div></td></tr>';
+                    return;
+                }
+                tbody.innerHTML = data.users.map(u => `
+                    <tr>
+                        <td style="color:var(--text-muted);">#${u.id}</td>
+                        <td class="td-name">${escapeHtml(u.username)}</td>
+                        <td><span class="status-badge ${u.role === 'owner' ? 'status-completed' : 'status-new'}">${u.role}</span></td>
+                        <td class="td-date">${formatDate(u.created_at)}</td>
+                        <td>${u.role !== 'owner' ? `<div class="action-btns"><button class="action-btn delete" onclick="deleteAdmin(${u.id})" title="Delete"><i class="fas fa-trash"></i></button></div>` : '<span style="color:var(--text-muted);font-size:0.75rem;">Protected</span>'}</td>
+                    </tr>
+                `).join('');
+            } catch { console.error('Failed to load users'); }
+        }
+
+        document.getElementById('createAdminBtn').addEventListener('click', async () => {
+            const username = document.getElementById('newAdminUsername').value.trim();
+            const password = document.getElementById('newAdminPassword').value.trim();
+            if (!username || !password) { showToast('Username and password required', 'error'); return; }
+            if (username.length < 3 || password.length < 4) { showToast('Username 3+ chars, password 4+ chars', 'error'); return; }
+            try {
+                const res = await fetch('/api/admin/users', { method: 'POST', headers: apiHeaders(), body: JSON.stringify({ username, password }) });
+                const data = await res.json();
+                if (data.success) {
+                    showToast('Admin account created!', 'success');
+                    document.getElementById('newAdminUsername').value = '';
+                    document.getElementById('newAdminPassword').value = '';
+                    loadUsers();
+                } else {
+                    showToast(data.error || 'Failed to create', 'error');
+                }
+            } catch { showToast('Failed to create admin', 'error'); }
+        });
+
+        async function deleteAdmin(id) {
+            if (!confirm('Delete this admin account?')) return;
+            try {
+                const res = await fetch('/api/admin/users/' + id, { method: 'DELETE', headers: apiHeaders() });
+                if (res.ok) { showToast('Admin deleted', 'success'); loadUsers(); }
+                else { const d = await res.json(); showToast(d.error || 'Failed', 'error'); }
+            } catch { showToast('Failed to delete', 'error'); }
+        }
     </script>
 </body>
 </html>

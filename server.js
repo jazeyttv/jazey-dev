@@ -10,12 +10,31 @@ const helmet = require('helmet');
 const rateLimit = require('express-rate-limit');
 const path = require('path');
 const JsonDatabase = require('./database');
+const crypto = require('crypto');
 
 const app = express();
 const PORT = process.env.PORT || 3000;
 
 // ── Database Setup ────────────────────────────
 const db = new JsonDatabase(path.join(__dirname, 'data', 'jazey.json'));
+
+// ── Seed owner account from env vars ──────────
+(function seedOwner() {
+    const ownerUser = process.env.ADMIN_USERNAME || 'jazey';
+    const ownerPass = process.env.ADMIN_PASSWORD || '104128jj';
+    const existing = db.getUser(ownerUser);
+    if (!existing) {
+        db.addUser({ username: ownerUser, password: ownerPass, role: 'owner' });
+        console.log('  [AUTH] Owner account seeded:', ownerUser);
+    } else if (existing.role !== 'owner') {
+        existing.role = 'owner';
+        db.save();
+    }
+})();
+
+function generatePassword() {
+    return crypto.randomBytes(4).toString('hex'); // 8-char hex password
+}
 
 // ── Resend (email) — lazy loaded ──────────────
 let resend = null;
@@ -59,13 +78,37 @@ const reviewsLimiter = rateLimit({
     legacyHeaders: false
 });
 
-// Admin auth middleware
+// Auth middleware — checks users DB
 function adminAuth(req, res, next) {
     const username = req.headers['x-admin-username'] || req.query.username;
     const password = req.headers['x-admin-password'] || req.query.password;
-    if (username !== process.env.ADMIN_USERNAME || password !== process.env.ADMIN_PASSWORD) {
+    const user = db.getUser(username);
+    if (!user || user.password !== password || (user.role !== 'owner' && user.role !== 'admin')) {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
+    req.adminUser = user;
+    next();
+}
+
+function ownerAuth(req, res, next) {
+    const username = req.headers['x-admin-username'] || req.query.username;
+    const password = req.headers['x-admin-password'] || req.query.password;
+    const user = db.getUser(username);
+    if (!user || user.password !== password || user.role !== 'owner') {
+        return res.status(401).json({ success: false, error: 'Owner access required.' });
+    }
+    req.adminUser = user;
+    next();
+}
+
+function clientAuth(req, res, next) {
+    const username = req.headers['x-client-username'];
+    const password = req.headers['x-client-password'];
+    const user = db.getUser(username);
+    if (!user || user.password !== password || user.role !== 'client') {
+        return res.status(401).json({ success: false, error: 'Unauthorized' });
+    }
+    req.clientUser = user;
     next();
 }
 
@@ -114,7 +157,22 @@ app.post('/api/contact', contactLimiter, (req, res) => {
 
         console.log(`  [NEW] #${entry.id} — ${clean.name} (${clean.discord}) — ${serviceNames[clean.service] || clean.service}`);
 
-        res.json({ success: true, ticketId: entry.id, message: 'Your message has been sent! We\'ll get back to you soon.' });
+        // Auto-create client account if one doesn't exist for this discord tag
+        let clientPassword = null;
+        let existingClient = db.getUserByDiscord(clean.discord);
+        if (!existingClient) {
+            clientPassword = generatePassword();
+            existingClient = db.addUser({ username: clean.discord.toLowerCase(), password: clientPassword, role: 'client', discord: clean.discord });
+            console.log(`  [AUTH] Client account created: ${clean.discord}`);
+        }
+
+        // Link submission to client user
+        if (existingClient && entry) {
+            entry.user_id = existingClient.id;
+            db.save();
+        }
+
+        res.json({ success: true, ticketId: entry.id, clientPassword, message: 'Your message has been sent! We\'ll get back to you soon.' });
     } catch (err) {
         console.error('  [ERROR]', err);
         res.status(500).json({ success: false, error: 'Something went wrong. Please try again.' });
@@ -352,8 +410,9 @@ app.get('/sitemap.xml', (req, res) => {
 
 app.post('/api/admin/login', loginLimiter, (req, res) => {
     const { username, password } = req.body;
-    if (username === process.env.ADMIN_USERNAME && password === process.env.ADMIN_PASSWORD) {
-        res.json({ success: true });
+    const user = db.getUser(username);
+    if (user && user.password === password && (user.role === 'owner' || user.role === 'admin')) {
+        res.json({ success: true, role: user.role, userId: user.id });
     } else {
         res.status(401).json({ success: false, error: 'Invalid credentials.' });
     }
@@ -598,6 +657,98 @@ app.get('/api/admin/analytics', adminAuth, (req, res) => {
     }
 });
 
+// ── User Management (Owner Only) ─────────────
+app.get('/api/admin/users', ownerAuth, (req, res) => {
+    try {
+        const users = db.getUsers().filter(u => u.role !== 'client').map(u => ({
+            id: u.id, username: u.username, role: u.role, created_at: u.created_at
+        }));
+        res.json({ success: true, users });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to load users.' });
+    }
+});
+
+app.post('/api/admin/users', ownerAuth, (req, res) => {
+    try {
+        const { username, password } = req.body;
+        if (!username || !password) {
+            return res.status(400).json({ success: false, error: 'Username and password are required.' });
+        }
+        if (username.length < 3 || password.length < 4) {
+            return res.status(400).json({ success: false, error: 'Username must be 3+ chars, password 4+ chars.' });
+        }
+        const existing = db.getUser(username);
+        if (existing) {
+            return res.status(400).json({ success: false, error: 'Username already taken.' });
+        }
+        const user = db.addUser({ username, password, role: 'admin' });
+        res.json({ success: true, user: { id: user.id, username: user.username, role: user.role, created_at: user.created_at } });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to create user.' });
+    }
+});
+
+app.delete('/api/admin/users/:id', ownerAuth, (req, res) => {
+    try {
+        const deleted = db.deleteUser(req.params.id);
+        if (!deleted) return res.status(400).json({ success: false, error: 'Cannot delete this user (may be owner or not found).' });
+        res.json({ success: true });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to delete user.' });
+    }
+});
+
+// ── Client Portal API ────────────────────────
+app.post('/api/client/login', loginLimiter, (req, res) => {
+    const { username, password } = req.body;
+    const user = db.getUser(username);
+    if (user && user.password === password && user.role === 'client') {
+        res.json({ success: true, user: { id: user.id, username: user.username, discord: user.discord } });
+    } else {
+        res.status(401).json({ success: false, error: 'Invalid credentials.' });
+    }
+});
+
+app.get('/api/client/tickets', clientAuth, (req, res) => {
+    try {
+        const tickets = db.getSubmissionsByDiscord(req.clientUser.discord);
+        const safe = tickets.map(s => ({
+            id: s.id,
+            name: s.name,
+            service: serviceNames[s.service] || s.service,
+            status: s.status,
+            priority: s.priority || false,
+            messages: (s.messages || []).length,
+            files: (s.files || []).length,
+            created_at: s.created_at,
+            updated_at: s.updated_at || s.created_at
+        }));
+        res.json({ success: true, tickets: safe });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to load tickets.' });
+    }
+});
+
+app.get('/api/client/profile', clientAuth, (req, res) => {
+    try {
+        const user = req.clientUser;
+        const tickets = db.getSubmissionsByDiscord(user.discord);
+        res.json({
+            success: true,
+            profile: {
+                id: user.id,
+                username: user.username,
+                discord: user.discord,
+                totalTickets: tickets.length,
+                activeTickets: tickets.filter(t => !['completed', 'cancelled'].includes(t.status)).length
+            }
+        });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to load profile.' });
+    }
+});
+
 // ══════════════════════════════════════════════
 // DISCORD WEBHOOK
 // ══════════════════════════════════════════════
@@ -723,6 +874,10 @@ app.get('/reviews', (req, res) => {
 
 app.get('/changelog', (req, res) => {
     res.sendFile(path.join(__dirname, 'changelog.html'));
+});
+
+app.get('/client', (req, res) => {
+    res.sendFile(path.join(__dirname, 'client.html'));
 });
 
 app.get('*', (req, res) => {

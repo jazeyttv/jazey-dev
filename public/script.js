@@ -439,7 +439,11 @@
                         banner.style.cssText = 'background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:16px 20px;margin-bottom:20px;text-align:center;animation:fadeInUp 0.5s ease;';
                         contactForm.parentElement.insertBefore(banner, contactForm);
                     }
-                    banner.innerHTML = `<p style="color:#10b981;font-weight:600;margin-bottom:4px;">Your ticket number is <strong>#${ticketId}</strong></p><p style="color:var(--text-secondary);font-size:0.85rem;">Save this number! <a href="/ticket?id=${ticketId}" style="color:#6C63FF;text-decoration:underline;">Track your ticket here</a></p>`;
+                    let bannerHTML = `<p style="color:#10b981;font-weight:600;margin-bottom:4px;">Your ticket number is <strong>#${ticketId}</strong></p><p style="color:var(--text-secondary);font-size:0.85rem;">Save this number! <a href="/ticket?id=${ticketId}" style="color:#6C63FF;text-decoration:underline;">Track your ticket here</a></p>`;
+                    if (data.clientPassword) {
+                        bannerHTML += `<div style="margin-top:12px;padding:12px;background:rgba(108,99,255,0.1);border:1px solid rgba(108,99,255,0.3);border-radius:8px;"><p style="color:#6C63FF;font-weight:600;margin-bottom:6px;font-size:0.9rem;"><i class="fas fa-key"></i>&nbsp; Your Client Portal Login</p><p style="color:var(--text-secondary);font-size:0.85rem;">Username: <strong style="color:#fff;">${formData.discord.toLowerCase()}</strong></p><p style="color:var(--text-secondary);font-size:0.85rem;">Password: <strong style="color:#fff;">${data.clientPassword}</strong></p><p style="color:#ff6b6b;font-size:0.75rem;margin-top:6px;"><i class="fas fa-exclamation-triangle"></i> Save this password! It won't be shown again.</p><p style="margin-top:6px;"><a href="/client" style="color:#6C63FF;text-decoration:underline;font-size:0.85rem;">Go to Client Portal &rarr;</a></p></div>`;
+                    }
+                    banner.innerHTML = bannerHTML;
 
                     setTimeout(() => {
                         btn.innerHTML = originalContent;
