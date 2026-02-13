@@ -462,7 +462,8 @@
                     <option value="completed">Completed</option><option value="cancelled">Cancelled</option>
                 </select>
             </div>
-            <div class="modal-field"><label>Internal Notes</label><textarea id="modalNotes" rows="3" placeholder="Add notes about this project..."></textarea></div>
+            <div class="modal-field"><label>Client Message <span style="color:var(--accent);font-size:0.65rem;font-weight:400;">(visible on ticket tracker)</span></label><textarea id="modalClientMsg" rows="2" placeholder="Update for the client, e.g. 'Working on your heist script — 70% done!'"></textarea></div>
+            <div class="modal-field"><label>Internal Notes <span style="color:var(--text-muted);font-size:0.65rem;font-weight:400;">(private, only you see this)</span></label><textarea id="modalNotes" rows="3" placeholder="Add notes about this project..."></textarea></div>
             <div class="modal-actions">
                 <button class="modal-btn modal-btn-cancel" id="modalCancel">Cancel</button>
                 <button class="modal-btn modal-btn-save" id="modalSave">Save Changes</button>
@@ -739,6 +740,7 @@
                 document.getElementById('modalMessage').textContent = sub.message;
                 document.getElementById('modalDate').textContent = new Date(sub.created_at).toLocaleString();
                 document.getElementById('modalStatus').value = sub.status;
+                document.getElementById('modalClientMsg').value = sub.client_message || '';
                 document.getElementById('modalNotes').value = sub.notes || '';
                 document.getElementById('detailModal').classList.add('active');
             } catch { showToast('Failed to load details', 'error'); }
@@ -749,9 +751,10 @@
 
         document.getElementById('modalSave').addEventListener('click', async () => {
             const status = document.getElementById('modalStatus').value;
+            const client_message = document.getElementById('modalClientMsg').value;
             const notes = document.getElementById('modalNotes').value;
             try {
-                const res = await fetch(`/api/admin/submissions/${currentSubmissionId}`, { method: 'PATCH', headers: apiHeaders(), body: JSON.stringify({ status, notes }) });
+                const res = await fetch(`/api/admin/submissions/${currentSubmissionId}`, { method: 'PATCH', headers: apiHeaders(), body: JSON.stringify({ status, client_message, notes }) });
                 if (res.ok) { showToast('Updated!', 'success'); document.getElementById('detailModal').classList.remove('active'); loadSubmissions(); loadStats(); }
             } catch { showToast('Failed to save', 'error'); }
         });

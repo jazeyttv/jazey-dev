@@ -1,546 +1,690 @@
 <!DOCTYPE html>
-<html lang="en" data-theme="dark">
+<html lang="en">
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>JAZEY — Track Your Ticket</title>
-    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+    <title>JAZEY — Project Tracker</title>
+    <link href="https://fonts.googleapis.com/css2?family=Inter:wght@300;400;500;600;700;800&family=Space+Grotesk:wght@500;600;700;800&display=swap" rel="stylesheet">
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     <style>
         *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
 
         :root {
-            --bg: #0a0a0f;
-            --bg-card: #13131d;
-            --bg-hover: #1a1a28;
+            --bg: #060609;
+            --bg2: #0c0c14;
+            --card: #111119;
+            --card2: #16161f;
             --border: rgba(255,255,255,0.06);
+            --border2: rgba(255,255,255,0.1);
             --text: #ffffff;
-            --text-secondary: #9090aa;
-            --text-muted: #5e5e72;
-            --accent: #FF6B35;
-            --accent2: #FF3366;
-            --gradient: linear-gradient(135deg, #FF6B35, #FF3366);
+            --dim: #8888a8;
+            --muted: #555570;
+            --orange: #FF6B35;
+            --pink: #FF3366;
             --green: #10b981;
-            --yellow: #f59e0b;
             --blue: #3b82f6;
+            --yellow: #f59e0b;
             --red: #ef4444;
-            --radius: 12px;
+            --purple: #8b5cf6;
+            --gradient: linear-gradient(135deg, #FF6B35 0%, #FF3366 100%);
         }
 
         body {
-            font-family: 'Inter', sans-serif;
+            font-family: 'Inter', -apple-system, sans-serif;
             background: var(--bg);
             color: var(--text);
             min-height: 100vh;
-            display: flex;
-            flex-direction: column;
+            -webkit-font-smoothing: antialiased;
         }
+
+        /* Ambient BG */
+        .ambient {
+            position: fixed; inset: 0; z-index: 0; pointer-events: none; overflow: hidden;
+        }
+
+        .ambient-orb {
+            position: absolute; border-radius: 50%; filter: blur(120px); opacity: 0.15;
+        }
+
+        .ambient-orb-1 { width: 600px; height: 600px; background: #FF6B35; top: -200px; right: -150px; animation: ambFloat 12s ease-in-out infinite; }
+        .ambient-orb-2 { width: 400px; height: 400px; background: #FF3366; bottom: -100px; left: -100px; animation: ambFloat 15s ease-in-out infinite reverse; }
+        .ambient-orb-3 { width: 300px; height: 300px; background: #8b5cf6; top: 40%; left: 30%; animation: ambFloat 18s ease-in-out infinite; }
+
+        @keyframes ambFloat { 0%, 100% { transform: translateY(0) scale(1); } 50% { transform: translateY(-40px) scale(1.05); } }
+
+        /* Layout */
+        .wrapper { position: relative; z-index: 1; min-height: 100vh; display: flex; flex-direction: column; }
 
         /* Nav */
-        .top-bar {
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-            padding: 16px 32px;
-            border-bottom: 1px solid var(--border);
-            background: rgba(10,10,15,0.9);
-            backdrop-filter: blur(20px);
+        .nav {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 18px 32px; border-bottom: 1px solid var(--border);
+            background: rgba(6,6,9,0.8); backdrop-filter: blur(20px);
         }
 
-        .top-bar-logo {
-            display: flex;
-            align-items: center;
-            gap: 10px;
-            text-decoration: none;
-            color: #fff;
+        .nav-brand { display: flex; align-items: center; gap: 10px; text-decoration: none; color: #fff; }
+        .nav-brand h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.15rem; letter-spacing: 2px; }
+        .nav-badge { padding: 3px 10px; background: var(--gradient); border-radius: 6px; font-size: 0.6rem; font-weight: 700; letter-spacing: 1px; }
+
+        .nav-links { display: flex; gap: 20px; }
+        .nav-links a { color: var(--dim); text-decoration: none; font-size: 0.85rem; font-weight: 500; transition: 0.3s; }
+        .nav-links a:hover { color: var(--orange); }
+
+        /* Main */
+        .main { flex: 1; display: flex; align-items: center; justify-content: center; padding: 48px 20px; }
+        .container { width: 100%; max-width: 640px; }
+
+        /* Header */
+        .header { text-align: center; margin-bottom: 36px; }
+
+        .header-icon {
+            width: 64px; height: 64px; margin: 0 auto 20px;
+            background: var(--card2); border: 1px solid var(--border2);
+            border-radius: 16px; display: flex; align-items: center; justify-content: center;
+            font-size: 1.4rem;
         }
 
-        .top-bar-logo h2 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.2rem;
-            letter-spacing: 1px;
+        .header-icon i { background: var(--gradient); -webkit-background-clip: text; -webkit-text-fill-color: transparent; }
+
+        .header h1 { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 800; margin-bottom: 8px; letter-spacing: -0.5px; }
+        .header p { color: var(--dim); font-size: 0.95rem; max-width: 400px; margin: 0 auto; }
+
+        /* Search */
+        .search-box {
+            display: flex; gap: 10px; margin-bottom: 12px;
         }
 
-        .top-bar-badge {
-            padding: 3px 10px;
-            background: var(--gradient);
-            border-radius: 6px;
-            font-size: 0.65rem;
-            font-weight: 700;
-            letter-spacing: 1px;
+        .search-box input {
+            flex: 1; padding: 16px 20px; background: var(--card); border: 1px solid var(--border);
+            border-radius: 14px; color: #fff; font-size: 1rem; font-family: 'Inter', sans-serif;
+            outline: none; transition: 0.3s;
         }
 
-        .top-bar-right a {
-            color: var(--text-secondary);
-            text-decoration: none;
-            font-size: 0.85rem;
-            transition: 0.3s;
+        .search-box input:focus { border-color: var(--orange); box-shadow: 0 0 0 3px rgba(255,107,53,0.1); }
+        .search-box input::placeholder { color: var(--muted); }
+
+        .search-btn {
+            padding: 16px 28px; background: var(--gradient); border: none; border-radius: 14px;
+            color: #fff; font-weight: 700; font-size: 0.9rem; cursor: pointer; transition: 0.3s;
+            font-family: 'Inter', sans-serif; white-space: nowrap;
         }
 
-        .top-bar-right a:hover { color: var(--accent); }
+        .search-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,107,53,0.3); }
+        .search-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; }
 
-        /* Main Content */
-        .main {
-            flex: 1;
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            padding: 40px 20px;
-        }
-
-        .ticket-container {
-            width: 100%;
-            max-width: 520px;
-        }
-
-        .ticket-header {
-            text-align: center;
-            margin-bottom: 40px;
-        }
-
-        .ticket-header i {
-            font-size: 2.5rem;
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-            margin-bottom: 16px;
-            display: block;
-        }
-
-        .ticket-header h1 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.8rem;
-            font-weight: 700;
-            margin-bottom: 8px;
-        }
-
-        .ticket-header p {
-            color: var(--text-secondary);
-            font-size: 0.95rem;
-        }
-
-        /* Lookup Form */
-        .lookup-form {
-            display: flex;
-            gap: 12px;
-            margin-bottom: 32px;
-        }
-
-        .lookup-form input {
-            flex: 1;
-            padding: 16px 20px;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 12px;
-            color: #fff;
-            font-size: 1rem;
-            font-family: 'Inter', sans-serif;
-            outline: none;
-            transition: 0.3s;
-        }
-
-        .lookup-form input:focus {
-            border-color: var(--accent);
-            box-shadow: 0 0 0 3px rgba(255,107,53,0.1);
-        }
-
-        .lookup-form input::placeholder { color: var(--text-muted); }
-
-        .lookup-btn {
-            padding: 16px 28px;
-            background: var(--gradient);
-            border: none;
-            border-radius: 12px;
-            color: #fff;
-            font-weight: 600;
-            font-size: 0.95rem;
-            cursor: pointer;
-            transition: 0.3s;
-            font-family: 'Inter', sans-serif;
-            white-space: nowrap;
-        }
-
-        .lookup-btn:hover {
-            transform: translateY(-2px);
-            box-shadow: 0 8px 30px rgba(255,107,53,0.3);
-        }
-
-        .lookup-btn:disabled {
-            opacity: 0.6;
-            cursor: not-allowed;
-            transform: none;
-        }
+        .search-hint { text-align: center; font-size: 0.78rem; color: var(--muted); margin-bottom: 32px; }
 
         /* Error */
-        .error-msg {
-            text-align: center;
-            color: var(--red);
-            font-size: 0.9rem;
-            margin-bottom: 20px;
-            display: none;
+        .error { display: none; text-align: center; padding: 16px; background: rgba(239,68,68,0.08); border: 1px solid rgba(239,68,68,0.2); border-radius: 12px; color: var(--red); font-size: 0.9rem; margin-bottom: 20px; }
+        .error.show { display: block; animation: fadeIn 0.3s ease; }
+
+        /* Result */
+        .result { display: none; }
+        .result.show { display: block; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1); }
+
+        @keyframes slideUp { from { opacity: 0; transform: translateY(30px); } to { opacity: 1; transform: translateY(0); } }
+        @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes pulse { 0%, 100% { opacity: 1; } 50% { opacity: 0.5; } }
+
+        /* Status Card */
+        .status-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+            overflow: hidden; margin-bottom: 16px;
         }
 
-        .error-msg.show { display: block; }
-
-        /* Result Card */
-        .ticket-result {
-            display: none;
-            background: var(--bg-card);
-            border: 1px solid var(--border);
-            border-radius: 16px;
-            overflow: hidden;
-            animation: slideUp 0.4s ease;
-        }
-
-        .ticket-result.show { display: block; }
-
-        @keyframes slideUp {
-            from { opacity: 0; transform: translateY(20px); }
-            to { opacity: 1; transform: translateY(0); }
-        }
-
-        .ticket-result-header {
-            padding: 24px 28px;
-            background: rgba(255,255,255,0.02);
-            border-bottom: 1px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: space-between;
-        }
-
-        .ticket-result-header h3 {
-            font-family: 'Space Grotesk', sans-serif;
-            font-size: 1.1rem;
-        }
-
-        .ticket-result-header h3 span {
-            background: var(--gradient);
-            -webkit-background-clip: text;
-            -webkit-text-fill-color: transparent;
-            background-clip: text;
-        }
-
-        /* Status Badge */
-        .status-badge {
-            display: inline-flex;
-            align-items: center;
-            gap: 6px;
-            padding: 6px 16px;
-            border-radius: 50px;
-            font-size: 0.78rem;
-            font-weight: 700;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-        }
-
-        .status-badge i { font-size: 0.6rem; }
-
-        .status-new { background: rgba(255,107,53,0.15); color: var(--accent); }
-        .status-in-progress { background: rgba(59,130,246,0.15); color: var(--blue); }
-        .status-completed { background: rgba(16,185,129,0.15); color: var(--green); }
-        .status-cancelled { background: rgba(239,68,68,0.15); color: var(--red); }
-
-        .ticket-result-body {
-            padding: 28px;
-        }
-
-        .ticket-field {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            padding: 14px 0;
+        .status-card-top {
+            padding: 28px; display: flex; align-items: flex-start; justify-content: space-between; gap: 16px;
             border-bottom: 1px solid var(--border);
         }
 
-        .ticket-field:last-child { border-bottom: none; }
+        .status-card-top-left h2 { font-family: 'Space Grotesk', sans-serif; font-size: 1.4rem; font-weight: 700; margin-bottom: 4px; }
+        .status-card-top-left h2 span { color: var(--orange); }
+        .status-card-top-left p { color: var(--dim); font-size: 0.85rem; }
 
-        .ticket-field-label {
-            font-size: 0.8rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
+        .status-pill {
+            display: inline-flex; align-items: center; gap: 8px;
+            padding: 8px 18px; border-radius: 50px; font-size: 0.8rem; font-weight: 700;
+            text-transform: uppercase; letter-spacing: 0.5px; white-space: nowrap; flex-shrink: 0;
         }
 
-        .ticket-field-value {
-            font-size: 0.95rem;
-            font-weight: 500;
-            text-align: right;
+        .status-pill .pulse-dot { width: 8px; height: 8px; border-radius: 50%; animation: pulse 2s ease-in-out infinite; }
+
+        .pill-new { background: rgba(255,107,53,0.12); color: var(--orange); }
+        .pill-new .pulse-dot { background: var(--orange); }
+        .pill-in-progress { background: rgba(59,130,246,0.12); color: var(--blue); }
+        .pill-in-progress .pulse-dot { background: var(--blue); }
+        .pill-completed { background: rgba(16,185,129,0.12); color: var(--green); }
+        .pill-completed .pulse-dot { background: var(--green); }
+        .pill-cancelled { background: rgba(239,68,68,0.12); color: var(--red); }
+        .pill-cancelled .pulse-dot { background: var(--red); }
+
+        /* Info Grid */
+        .info-grid { display: grid; grid-template-columns: 1fr 1fr; border-bottom: 1px solid var(--border); }
+
+        .info-cell { padding: 20px 28px; }
+        .info-cell:first-child { border-right: 1px solid var(--border); }
+
+        .info-label { font-size: 0.7rem; font-weight: 600; color: var(--muted); text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 6px; }
+        .info-value { font-size: 0.95rem; font-weight: 600; }
+        .info-value.accent { color: var(--orange); }
+
+        /* Client Message */
+        .client-msg {
+            padding: 24px 28px; border-bottom: 1px solid var(--border);
+            display: none;
         }
 
-        /* Progress Bar */
-        .progress-section {
-            padding: 24px 28px;
-            border-top: 1px solid var(--border);
+        .client-msg.show { display: block; }
+
+        .client-msg-label {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.7rem; font-weight: 600; color: var(--orange);
+            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 10px;
         }
 
-        .progress-label {
-            font-size: 0.75rem;
-            font-weight: 600;
-            color: var(--text-muted);
-            text-transform: uppercase;
-            letter-spacing: 1px;
-            margin-bottom: 12px;
+        .client-msg-label i { font-size: 0.75rem; }
+
+        .client-msg-body {
+            padding: 16px 20px; background: rgba(255,107,53,0.05);
+            border: 1px solid rgba(255,107,53,0.12); border-radius: 12px;
+            color: var(--text); font-size: 0.92rem; line-height: 1.7;
         }
 
-        .progress-track {
-            display: flex;
-            align-items: center;
-            gap: 0;
+        /* Progress Section */
+        .progress-section { padding: 28px; }
+
+        .progress-title {
+            font-size: 0.7rem; font-weight: 600; color: var(--muted);
+            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 24px;
         }
 
-        .progress-step {
-            flex: 1;
-            text-align: center;
-            position: relative;
+        /* Vertical Timeline */
+        .timeline { display: flex; flex-direction: column; gap: 0; padding-left: 8px; }
+
+        .timeline-item { display: flex; gap: 20px; position: relative; }
+
+        .timeline-track {
+            display: flex; flex-direction: column; align-items: center; flex-shrink: 0; width: 36px;
         }
 
-        .progress-dot {
-            width: 28px;
-            height: 28px;
-            border-radius: 50%;
-            background: rgba(255,255,255,0.06);
-            border: 2px solid var(--border);
-            display: flex;
-            align-items: center;
-            justify-content: center;
-            margin: 0 auto 8px;
-            font-size: 0.6rem;
-            color: var(--text-muted);
-            transition: 0.3s;
+        .timeline-dot {
+            width: 36px; height: 36px; border-radius: 50%;
+            display: flex; align-items: center; justify-content: center;
+            font-size: 0.75rem; border: 2px solid var(--border);
+            background: var(--bg2); color: var(--muted); transition: 0.3s;
+            flex-shrink: 0; position: relative; z-index: 2;
         }
 
-        .progress-step.active .progress-dot {
-            background: var(--gradient);
-            border-color: transparent;
-            color: #fff;
+        .timeline-item.done .timeline-dot { background: var(--green); border-color: var(--green); color: #fff; }
+        .timeline-item.active .timeline-dot { background: var(--gradient); border-color: transparent; color: #fff; box-shadow: 0 0 20px rgba(255,107,53,0.3); animation: pulse 2s ease-in-out infinite; }
+        .timeline-item.cancelled .timeline-dot { background: var(--red); border-color: var(--red); color: #fff; }
+
+        .timeline-line {
+            width: 2px; flex: 1; min-height: 24px;
+            background: var(--border); margin: 4px 0;
         }
 
-        .progress-step.done .progress-dot {
-            background: var(--green);
-            border-color: transparent;
-            color: #fff;
+        .timeline-item.done .timeline-line { background: var(--green); }
+        .timeline-item.active .timeline-line { background: linear-gradient(to bottom, var(--orange), var(--border)); }
+
+        .timeline-body { padding: 6px 0 28px; flex: 1; }
+
+        .timeline-body h4 { font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 700; margin-bottom: 4px; }
+        .timeline-item.done .timeline-body h4 { color: var(--green); }
+        .timeline-item.active .timeline-body h4 { color: var(--orange); }
+        .timeline-item:not(.done):not(.active):not(.cancelled) .timeline-body h4 { color: var(--muted); }
+        .timeline-item.cancelled .timeline-body h4 { color: var(--red); }
+
+        .timeline-body p { font-size: 0.82rem; color: var(--muted); line-height: 1.5; }
+        .timeline-item.done .timeline-body p, .timeline-item.active .timeline-body p { color: var(--dim); }
+
+        .timeline-time { font-size: 0.72rem; color: var(--muted); margin-top: 4px; font-style: italic; }
+        .timeline-item.done .timeline-time, .timeline-item.active .timeline-time { color: var(--dim); }
+
+        .timeline-item:last-child .timeline-line { display: none; }
+
+        /* Activity Log */
+        .activity-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 16px;
+            overflow: hidden; display: none;
         }
 
-        .progress-step-label {
-            font-size: 0.7rem;
-            color: var(--text-muted);
-            font-weight: 500;
+        .activity-card.show { display: block; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.1s both; }
+
+        .activity-header {
+            padding: 20px 24px; border-bottom: 1px solid var(--border);
+            font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 700;
+            display: flex; align-items: center; gap: 10px;
         }
 
-        .progress-step.active .progress-step-label,
-        .progress-step.done .progress-step-label {
-            color: var(--text-secondary);
+        .activity-header i { color: var(--orange); font-size: 0.85rem; }
+
+        .activity-list { padding: 8px 0; max-height: 300px; overflow-y: auto; }
+
+        .activity-item {
+            display: flex; align-items: flex-start; gap: 14px; padding: 14px 24px;
+            transition: background 0.2s;
         }
 
-        .progress-line {
-            flex: 0 0 auto;
-            width: 40px;
-            height: 2px;
-            background: var(--border);
-            margin-bottom: 26px;
+        .activity-item:hover { background: rgba(255,255,255,0.02); }
+
+        .activity-dot {
+            width: 8px; height: 8px; border-radius: 50%; margin-top: 6px; flex-shrink: 0;
         }
 
-        .progress-line.filled { background: var(--green); }
+        .activity-dot.green { background: var(--green); }
+        .activity-dot.blue { background: var(--blue); }
+        .activity-dot.orange { background: var(--orange); }
+        .activity-dot.red { background: var(--red); }
+
+        .activity-text { font-size: 0.85rem; color: var(--dim); line-height: 1.4; }
+        .activity-text strong { color: var(--text); font-weight: 600; }
+        .activity-date { font-size: 0.72rem; color: var(--muted); margin-top: 2px; }
+
+        .activity-empty { padding: 24px; text-align: center; color: var(--muted); font-size: 0.85rem; }
+
+        /* Auto-refresh badge */
+        .refresh-badge {
+            text-align: center; margin-top: 16px;
+            font-size: 0.75rem; color: var(--muted);
+        }
+
+        .refresh-badge i { margin-right: 4px; }
 
         /* Footer */
         .page-footer {
-            text-align: center;
-            padding: 20px;
-            color: var(--text-muted);
-            font-size: 0.8rem;
+            text-align: center; padding: 24px; color: var(--muted); font-size: 0.8rem;
             border-top: 1px solid var(--border);
         }
 
-        .page-footer a {
-            color: var(--accent);
-            text-decoration: none;
-        }
-
+        .page-footer a { color: var(--orange); text-decoration: none; }
         .page-footer a:hover { text-decoration: underline; }
 
         /* Responsive */
-        @media (max-width: 480px) {
-            .lookup-form { flex-direction: column; }
-            .top-bar { padding: 12px 16px; }
-            .ticket-result-header { flex-direction: column; gap: 12px; align-items: flex-start; }
-            .progress-line { width: 20px; }
+        @media (max-width: 640px) {
+            .nav { padding: 14px 16px; }
+            .nav-links { gap: 12px; }
+            .search-box { flex-direction: column; }
+            .info-grid { grid-template-columns: 1fr; }
+            .info-cell:first-child { border-right: none; border-bottom: 1px solid var(--border); }
+            .status-card-top { flex-direction: column; }
+            .header h1 { font-size: 1.6rem; }
         }
     </style>
 </head>
 <body>
 
-    <!-- Top Bar -->
-    <div class="top-bar">
-        <a href="/" class="top-bar-logo">
-            <h2>JAZEY</h2>
-            <span class="top-bar-badge">TICKETS</span>
-        </a>
-        <div class="top-bar-right">
-            <a href="/"><i class="fas fa-arrow-left"></i>&nbsp; Back to Site</a>
-        </div>
+    <!-- Ambient Background -->
+    <div class="ambient">
+        <div class="ambient-orb ambient-orb-1"></div>
+        <div class="ambient-orb ambient-orb-2"></div>
+        <div class="ambient-orb ambient-orb-3"></div>
     </div>
 
-    <!-- Main -->
-    <div class="main">
-        <div class="ticket-container">
-            <div class="ticket-header">
-                <i class="fas fa-ticket-alt"></i>
-                <h1>Track Your Ticket</h1>
-                <p>Enter the ticket number you received after submitting your inquiry.</p>
+    <div class="wrapper">
+        <!-- Nav -->
+        <div class="nav">
+            <a href="/" class="nav-brand">
+                <h2>JAZEY</h2>
+                <span class="nav-badge">TRACKER</span>
+            </a>
+            <div class="nav-links">
+                <a href="/"><i class="fas fa-home"></i> Home</a>
+                <a href="/#contact"><i class="fas fa-envelope"></i> Contact</a>
             </div>
+        </div>
 
-            <div class="lookup-form">
-                <input type="number" id="ticketInput" placeholder="Enter ticket # (e.g. 1)" min="1" autocomplete="off">
-                <button class="lookup-btn" id="lookupBtn"><i class="fas fa-search"></i>&nbsp; Look Up</button>
-            </div>
-
-            <p class="error-msg" id="errorMsg"></p>
-
-            <div class="ticket-result" id="ticketResult">
-                <div class="ticket-result-header">
-                    <h3>Ticket <span id="resultId">#1</span></h3>
-                    <span class="status-badge" id="resultBadge"></span>
+        <!-- Main -->
+        <div class="main">
+            <div class="container">
+                <div class="header">
+                    <div class="header-icon"><i class="fas fa-satellite-dish"></i></div>
+                    <h1>Project Tracker</h1>
+                    <p>Enter your ticket number to see real-time updates on your development project.</p>
                 </div>
-                <div class="ticket-result-body">
-                    <div class="ticket-field">
-                        <span class="ticket-field-label">Client</span>
-                        <span class="ticket-field-value" id="resultName"></span>
-                    </div>
-                    <div class="ticket-field">
-                        <span class="ticket-field-label">Service</span>
-                        <span class="ticket-field-value" id="resultService"></span>
-                    </div>
-                    <div class="ticket-field">
-                        <span class="ticket-field-label">Submitted</span>
-                        <span class="ticket-field-value" id="resultDate"></span>
-                    </div>
+
+                <div class="search-box">
+                    <input type="number" id="ticketInput" placeholder="Ticket number (e.g. 1)" min="1" autocomplete="off">
+                    <button class="search-btn" id="lookupBtn"><i class="fas fa-search"></i>&nbsp; Track</button>
                 </div>
-                <div class="progress-section">
-                    <div class="progress-label">Progress</div>
-                    <div class="progress-track" id="progressTrack">
-                        <div class="progress-step" data-step="new">
-                            <div class="progress-dot"><i class="fas fa-inbox"></i></div>
-                            <div class="progress-step-label">Received</div>
+                <p class="search-hint">You received your ticket number after submitting the contact form.</p>
+
+                <div class="error" id="errorMsg"></div>
+
+                <div class="result" id="result">
+                    <!-- Status Card -->
+                    <div class="status-card" id="statusCard">
+                        <div class="status-card-top">
+                            <div class="status-card-top-left">
+                                <h2>Ticket <span id="rId">#1</span></h2>
+                                <p id="rUpdated">Last updated just now</p>
+                            </div>
+                            <div class="status-pill" id="rPill">
+                                <span class="pulse-dot"></span>
+                                <span id="rPillText">Received</span>
+                            </div>
                         </div>
-                        <div class="progress-line" id="line1"></div>
-                        <div class="progress-step" data-step="in-progress">
-                            <div class="progress-dot"><i class="fas fa-code"></i></div>
-                            <div class="progress-step-label">In Progress</div>
+
+                        <div class="info-grid">
+                            <div class="info-cell">
+                                <div class="info-label">Client</div>
+                                <div class="info-value" id="rName">—</div>
+                            </div>
+                            <div class="info-cell">
+                                <div class="info-label">Service</div>
+                                <div class="info-value accent" id="rService">—</div>
+                            </div>
                         </div>
-                        <div class="progress-line" id="line2"></div>
-                        <div class="progress-step" data-step="completed">
-                            <div class="progress-dot"><i class="fas fa-check"></i></div>
-                            <div class="progress-step-label">Completed</div>
+
+                        <div class="client-msg" id="clientMsg">
+                            <div class="client-msg-label"><i class="fas fa-comment-dots"></i> Developer Update</div>
+                            <div class="client-msg-body" id="clientMsgBody"></div>
+                        </div>
+
+                        <div class="progress-section">
+                            <div class="progress-title">Development Progress</div>
+                            <div class="timeline" id="timeline">
+                                <div class="timeline-item" data-step="new" id="step-new">
+                                    <div class="timeline-track">
+                                        <div class="timeline-dot"><i class="fas fa-inbox"></i></div>
+                                        <div class="timeline-line"></div>
+                                    </div>
+                                    <div class="timeline-body">
+                                        <h4>Received</h4>
+                                        <p>Your inquiry has been received and is in our queue.</p>
+                                        <div class="timeline-time" id="time-new"></div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item" data-step="reviewing" id="step-reviewing">
+                                    <div class="timeline-track">
+                                        <div class="timeline-dot"><i class="fas fa-search"></i></div>
+                                        <div class="timeline-line"></div>
+                                    </div>
+                                    <div class="timeline-body">
+                                        <h4>Under Review</h4>
+                                        <p>We're reviewing your requirements and planning the approach.</p>
+                                        <div class="timeline-time" id="time-reviewing"></div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item" data-step="in-progress" id="step-in-progress">
+                                    <div class="timeline-track">
+                                        <div class="timeline-dot"><i class="fas fa-code"></i></div>
+                                        <div class="timeline-line"></div>
+                                    </div>
+                                    <div class="timeline-body">
+                                        <h4>In Development</h4>
+                                        <p>Your project is actively being built and coded.</p>
+                                        <div class="timeline-time" id="time-in-progress"></div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item" data-step="testing" id="step-testing">
+                                    <div class="timeline-track">
+                                        <div class="timeline-dot"><i class="fas fa-vial"></i></div>
+                                        <div class="timeline-line"></div>
+                                    </div>
+                                    <div class="timeline-body">
+                                        <h4>Testing & QA</h4>
+                                        <p>Final testing, optimization, and quality assurance checks.</p>
+                                        <div class="timeline-time" id="time-testing"></div>
+                                    </div>
+                                </div>
+                                <div class="timeline-item" data-step="completed" id="step-completed">
+                                    <div class="timeline-track">
+                                        <div class="timeline-dot"><i class="fas fa-flag-checkered"></i></div>
+                                        <div class="timeline-line"></div>
+                                    </div>
+                                    <div class="timeline-body">
+                                        <h4>Delivered</h4>
+                                        <p>Your project is complete and ready for deployment!</p>
+                                        <div class="timeline-time" id="time-completed"></div>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
+
+                    <!-- Activity Log -->
+                    <div class="activity-card" id="activityCard">
+                        <div class="activity-header"><i class="fas fa-stream"></i> Status History</div>
+                        <div class="activity-list" id="activityList"></div>
+                    </div>
+
+                    <div class="refresh-badge"><i class="fas fa-sync-alt"></i> Auto-refreshes every 30 seconds</div>
                 </div>
             </div>
         </div>
-    </div>
 
-    <!-- Footer -->
-    <div class="page-footer">
-        <p>&copy; 2026 <a href="/">JAZEY Development</a> — Turning Ideas Into Legendary Servers.</p>
+        <!-- Footer -->
+        <div class="page-footer">
+            <p>&copy; 2026 <a href="/">JAZEY Development</a> — Turning Ideas Into Legendary Servers.</p>
+        </div>
     </div>
 
     <script>
-        const ticketInput = document.getElementById('ticketInput');
-        const lookupBtn = document.getElementById('lookupBtn');
-        const errorMsg = document.getElementById('errorMsg');
-        const ticketResult = document.getElementById('ticketResult');
+        const input = document.getElementById('ticketInput');
+        const btn = document.getElementById('lookupBtn');
+        const errorEl = document.getElementById('errorMsg');
+        const resultEl = document.getElementById('result');
+        let currentTicketId = null;
+        let refreshInterval = null;
 
-        // Check URL params (e.g. /ticket?id=5)
-        const urlParams = new URLSearchParams(window.location.search);
-        const urlId = urlParams.get('id');
-        if (urlId) {
-            ticketInput.value = urlId;
-            lookupTicket(urlId);
-        }
+        // Auto-load from URL
+        const urlId = new URLSearchParams(window.location.search).get('id');
+        if (urlId) { input.value = urlId; lookup(urlId); }
 
-        lookupBtn.addEventListener('click', () => lookupTicket(ticketInput.value));
-        ticketInput.addEventListener('keypress', (e) => { if (e.key === 'Enter') lookupTicket(ticketInput.value); });
+        btn.addEventListener('click', () => lookup(input.value));
+        input.addEventListener('keypress', (e) => { if (e.key === 'Enter') lookup(input.value); });
 
-        async function lookupTicket(id) {
-            const ticketId = String(id).trim();
-            if (!ticketId) {
-                showError('Please enter a ticket number.');
-                return;
-            }
+        async function lookup(id) {
+            const tid = String(id).trim();
+            if (!tid) { showError('Please enter a ticket number.'); return; }
 
-            lookupBtn.disabled = true;
-            lookupBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>&nbsp; Looking up...';
-            errorMsg.classList.remove('show');
-            ticketResult.classList.remove('show');
+            btn.disabled = true;
+            btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>&nbsp; Loading...';
+            errorEl.classList.remove('show');
+            resultEl.classList.remove('show');
 
             try {
-                const res = await fetch(`/api/ticket/${ticketId}`);
+                const res = await fetch('/api/ticket/' + tid);
                 const data = await res.json();
 
-                if (!data.success) {
-                    showError(data.error || 'Ticket not found.');
-                    return;
-                }
+                if (!data.success) { showError(data.error || 'Ticket not found.'); return; }
 
-                renderTicket(data.ticket);
+                currentTicketId = tid;
+                render(data.ticket);
+
+                // Update URL without reload
+                history.replaceState(null, '', '/ticket?id=' + tid);
+
+                // Start auto-refresh
+                if (refreshInterval) clearInterval(refreshInterval);
+                refreshInterval = setInterval(() => silentRefresh(tid), 30000);
             } catch (err) {
                 showError('Connection error. Please try again.');
             } finally {
-                lookupBtn.disabled = false;
-                lookupBtn.innerHTML = '<i class="fas fa-search"></i>&nbsp; Look Up';
+                btn.disabled = false;
+                btn.innerHTML = '<i class="fas fa-search"></i>&nbsp; Track';
             }
         }
 
-        function renderTicket(ticket) {
-            document.getElementById('resultId').textContent = `#${ticket.id}`;
-            document.getElementById('resultName').textContent = ticket.name;
-            document.getElementById('resultService').textContent = ticket.service;
-            document.getElementById('resultDate').textContent = new Date(ticket.created_at).toLocaleDateString('en-US', {
-                weekday: 'short', month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
-            });
+        async function silentRefresh(id) {
+            try {
+                const res = await fetch('/api/ticket/' + id);
+                const data = await res.json();
+                if (data.success) render(data.ticket);
+            } catch (e) {}
+        }
 
-            // Status badge
-            const badge = document.getElementById('resultBadge');
-            const statusConfig = {
-                'new': { label: 'Received', icon: 'fa-inbox', cls: 'status-new' },
-                'in-progress': { label: 'In Progress', icon: 'fa-spinner fa-spin', cls: 'status-in-progress' },
-                'completed': { label: 'Completed', icon: 'fa-check', cls: 'status-completed' },
-                'cancelled': { label: 'Cancelled', icon: 'fa-times', cls: 'status-cancelled' }
+        function render(t) {
+            // ID + updated
+            document.getElementById('rId').textContent = '#' + t.id;
+            document.getElementById('rUpdated').textContent = 'Last updated ' + timeAgo(t.updated_at);
+            document.getElementById('rName').textContent = t.name;
+            document.getElementById('rService').textContent = t.service;
+
+            // Status pill
+            const pill = document.getElementById('rPill');
+            const pillText = document.getElementById('rPillText');
+            const pillConfig = {
+                'new':         { text: 'Received',    cls: 'pill-new' },
+                'in-progress': { text: 'In Progress', cls: 'pill-in-progress' },
+                'completed':   { text: 'Delivered',   cls: 'pill-completed' },
+                'cancelled':   { text: 'Cancelled',   cls: 'pill-cancelled' }
             };
-            const sc = statusConfig[ticket.status] || statusConfig['new'];
-            badge.className = `status-badge ${sc.cls}`;
-            badge.innerHTML = `<i class="fas ${sc.icon}"></i> ${sc.label}`;
+            const pc = pillConfig[t.status] || pillConfig['new'];
+            pill.className = 'status-pill ' + pc.cls;
+            pillText.textContent = pc.text;
 
-            // Progress bar
-            const steps = ['new', 'in-progress', 'completed'];
-            const currentIdx = steps.indexOf(ticket.status);
-            const isCancelled = ticket.status === 'cancelled';
+            // Client message
+            const msgEl = document.getElementById('clientMsg');
+            const msgBody = document.getElementById('clientMsgBody');
+            if (t.client_message) {
+                msgBody.textContent = t.client_message;
+                msgEl.classList.add('show');
+            } else {
+                msgEl.classList.remove('show');
+            }
 
-            document.querySelectorAll('.progress-step').forEach(step => {
-                step.classList.remove('active', 'done');
-                const stepName = step.dataset.step;
-                const stepIdx = steps.indexOf(stepName);
+            // Timeline
+            // Map real statuses to visual steps
+            const steps = ['new', 'reviewing', 'in-progress', 'testing', 'completed'];
+            const statusMap = {
+                'new': 0,
+                'in-progress': 2,
+                'completed': 4,
+                'cancelled': -1
+            };
+            const currentIdx = statusMap[t.status] !== undefined ? statusMap[t.status] : 0;
+            const isCancelled = t.status === 'cancelled';
+
+            // Build timestamp lookup from history
+            const historyTimes = {};
+            if (t.status_history && t.status_history.length > 0) {
+                t.status_history.forEach(h => {
+                    if (h.status === 'new') historyTimes['new'] = h.timestamp;
+                    if (h.status === 'in-progress') {
+                        historyTimes['reviewing'] = historyTimes['reviewing'] || h.timestamp;
+                        historyTimes['in-progress'] = h.timestamp;
+                    }
+                    if (h.status === 'completed') {
+                        historyTimes['testing'] = historyTimes['testing'] || h.timestamp;
+                        historyTimes['completed'] = h.timestamp;
+                    }
+                    if (h.status === 'cancelled') historyTimes['cancelled'] = h.timestamp;
+                });
+            }
+
+            steps.forEach((step, idx) => {
+                const el = document.getElementById('step-' + step);
+                if (!el) return;
+                el.classList.remove('done', 'active', 'cancelled');
 
                 if (isCancelled) {
-                    if (stepIdx === 0) step.classList.add('done');
-                } else if (stepIdx < currentIdx) {
-                    step.classList.add('done');
-                } else if (stepIdx === currentIdx) {
-                    step.classList.add('active');
+                    if (idx === 0) el.classList.add('done');
+                    else if (idx === 1 && currentIdx >= 2) el.classList.add('cancelled');
+                } else if (idx < currentIdx) {
+                    el.classList.add('done');
+                } else if (idx === currentIdx) {
+                    el.classList.add('active');
+                }
+
+                // Timestamps
+                const timeEl = document.getElementById('time-' + step);
+                if (timeEl) {
+                    if (step === 'new') {
+                        timeEl.textContent = formatDate(t.created_at);
+                    } else if (historyTimes[step]) {
+                        timeEl.textContent = formatDate(historyTimes[step]);
+                    } else if (idx < currentIdx) {
+                        timeEl.textContent = '';
+                    } else if (idx === currentIdx) {
+                        timeEl.textContent = 'In progress now...';
+                    } else {
+                        timeEl.textContent = 'Upcoming';
+                    }
                 }
             });
 
-            document.getElementById('line1').classList.toggle('filled', !isCancelled && currentIdx >= 1);
-            document.getElementById('line2').classList.toggle('filled', !isCancelled && currentIdx >= 2);
+            // Activity log
+            const actCard = document.getElementById('activityCard');
+            const actList = document.getElementById('activityList');
 
-            ticketResult.classList.add('show');
+            if (t.status_history && t.status_history.length > 0) {
+                actCard.classList.add('show');
+                const statusLabels = {
+                    'new': 'Ticket received',
+                    'in-progress': 'Development started',
+                    'completed': 'Project delivered',
+                    'cancelled': 'Project cancelled'
+                };
+                const dotColors = {
+                    'new': 'orange',
+                    'in-progress': 'blue',
+                    'completed': 'green',
+                    'cancelled': 'red'
+                };
+
+                actList.innerHTML = t.status_history.slice().reverse().map(h => {
+                    const label = statusLabels[h.status] || 'Status updated to ' + h.status;
+                    const color = dotColors[h.status] || 'orange';
+                    const msg = h.message ? `<br><span style="color:var(--dim);font-size:0.8rem;">"${escapeHtml(h.message)}"</span>` : '';
+                    return `
+                        <div class="activity-item">
+                            <div class="activity-dot ${color}"></div>
+                            <div>
+                                <div class="activity-text"><strong>${label}</strong>${msg}</div>
+                                <div class="activity-date">${formatDate(h.timestamp)}</div>
+                            </div>
+                        </div>
+                    `;
+                }).join('');
+            } else {
+                // Show at least the creation
+                actCard.classList.add('show');
+                actList.innerHTML = `
+                    <div class="activity-item">
+                        <div class="activity-dot orange"></div>
+                        <div>
+                            <div class="activity-text"><strong>Ticket received</strong></div>
+                            <div class="activity-date">${formatDate(t.created_at)}</div>
+                        </div>
+                    </div>
+                `;
+            }
+
+            resultEl.classList.add('show');
         }
 
         function showError(msg) {
-            errorMsg.textContent = msg;
-            errorMsg.classList.add('show');
-            ticketResult.classList.remove('show');
+            errorEl.textContent = msg;
+            errorEl.classList.add('show');
+            resultEl.classList.remove('show');
+        }
+
+        function timeAgo(dateStr) {
+            const d = new Date(dateStr);
+            const now = new Date();
+            const diff = now - d;
+            const mins = Math.floor(diff / 60000);
+            const hours = Math.floor(diff / 3600000);
+            const days = Math.floor(diff / 86400000);
+            if (mins < 1) return 'just now';
+            if (mins < 60) return mins + 'm ago';
+            if (hours < 24) return hours + 'h ago';
+            if (days < 7) return days + 'd ago';
+            return d.toLocaleDateString();
+        }
+
+        function formatDate(dateStr) {
+            return new Date(dateStr).toLocaleDateString('en-US', {
+                month: 'short', day: 'numeric', year: 'numeric', hour: '2-digit', minute: '2-digit'
+            });
+        }
+
+        function escapeHtml(str) {
+            const d = document.createElement('div');
+            d.textContent = str;
+            return d.innerHTML;
         }
     </script>
 </body>

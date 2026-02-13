@@ -136,7 +136,7 @@ app.get('/api/ticket/:id', (req, res) => {
         if (!sub) {
             return res.status(404).json({ success: false, error: 'Ticket not found. Please check your ticket number.' });
         }
-        // Return only public-safe info (no message content, notes, discord, or IP)
+        // Return public-safe info (no message body, internal notes, discord, or IP)
         res.json({
             success: true,
             ticket: {
@@ -144,7 +144,10 @@ app.get('/api/ticket/:id', (req, res) => {
                 name: sub.name,
                 service: serviceNames[sub.service] || sub.service,
                 status: sub.status,
-                created_at: sub.created_at
+                client_message: sub.client_message || null,
+                status_history: sub.status_history || [],
+                created_at: sub.created_at,
+                updated_at: sub.updated_at || sub.created_at
             }
         });
     } catch (err) {

@@ -89,15 +89,33 @@ class JsonDatabase {
         const index = this.data.submissions.findIndex(s => s.id === parseInt(id));
         if (index === -1) return null;
 
+        const sub = this.data.submissions[index];
+        const oldStatus = sub.status;
+
         if (updates.status !== undefined) {
-            this.data.submissions[index].status = updates.status;
+            sub.status = updates.status;
         }
         if (updates.notes !== undefined) {
-            this.data.submissions[index].notes = updates.notes;
+            sub.notes = updates.notes;
+        }
+        if (updates.client_message !== undefined) {
+            sub.client_message = updates.client_message;
+        }
+
+        sub.updated_at = new Date().toISOString();
+
+        // Track status history for the timeline
+        if (!sub.status_history) sub.status_history = [];
+        if (updates.status && updates.status !== oldStatus) {
+            sub.status_history.push({
+                status: updates.status,
+                timestamp: new Date().toISOString(),
+                message: updates.client_message || null
+            });
         }
 
         this.save();
-        return this.data.submissions[index];
+        return sub;
     }
 
     deleteSubmission(id) {
