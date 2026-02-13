@@ -182,10 +182,28 @@ app.post('/api/contact', contactLimiter, (req, res) => {
 // POST /api/track
 app.post('/api/track', (req, res) => {
     try {
-        const { page, referrer } = req.body;
+        const { page, referrer, screen_width, screen_height, viewport_width, viewport_height, language, platform, timezone, color_depth, pixel_ratio, touch, connection, cores, memory } = req.body;
         const ip = req.headers['x-forwarded-for'] || req.socket.remoteAddress || 'unknown';
         const userAgent = req.headers['user-agent'] || '';
-        db.addPageView({ page: page || '/', referrer: referrer || '', user_agent: userAgent, ip_address: ip });
+        db.addPageView({
+            page: page || '/',
+            referrer: referrer || '',
+            user_agent: userAgent,
+            ip_address: ip,
+            screen_width: screen_width || null,
+            screen_height: screen_height || null,
+            viewport_width: viewport_width || null,
+            viewport_height: viewport_height || null,
+            language: language || null,
+            platform: platform || null,
+            timezone: timezone || null,
+            color_depth: color_depth || null,
+            pixel_ratio: pixel_ratio || null,
+            touch: touch || false,
+            connection: connection || null,
+            cores: cores || null,
+            memory: memory || null
+        });
         res.json({ success: true });
     } catch (err) {
         res.status(500).json({ success: false });

@@ -456,6 +456,7 @@
                 <button class="admin-tab" data-tab="coupons"><i class="fas fa-tags"></i>&nbsp; Coupons</button>
                 <button class="admin-tab" data-tab="changelog"><i class="fas fa-scroll"></i>&nbsp; Changelog</button>
                 <button class="admin-tab" data-tab="analytics"><i class="fas fa-chart-line"></i>&nbsp; Analytics</button>
+                <button class="admin-tab" data-tab="visitors"><i class="fas fa-eye"></i>&nbsp; Visitor Logs</button>
                 <button class="admin-tab" data-tab="blog"><i class="fas fa-pen-fancy"></i>&nbsp; Blog Manager</button>
                 <button class="admin-tab" data-tab="users" id="usersTab" style="display:none;"><i class="fas fa-users-cog"></i>&nbsp; Users</button>
             </div>
@@ -686,6 +687,43 @@
                 </div>
             </div>
 
+            <!-- Tab: Visitor Logs -->
+            <div class="tab-content" id="tab-visitors">
+                <div class="toolbar" style="justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                    <h3><i class="fas fa-eye" style="color: var(--accent); margin-right: 8px;"></i>All Visitor Logs</h3>
+                    <div style="display: flex; gap: 8px; align-items: center;">
+                        <input type="text" id="visitorSearch" placeholder="Search by IP, page, browser..." style="padding: 8px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 0.82rem; width: 220px; font-family: 'Inter', sans-serif; outline: none;">
+                        <select id="visitorDeviceFilter" style="padding: 8px 14px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: #fff; font-size: 0.82rem; font-family: 'Inter', sans-serif; outline: none;">
+                            <option value="all">All Devices</option>
+                            <option value="Desktop">Desktop</option>
+                            <option value="Mobile">Mobile</option>
+                            <option value="Tablet">Tablet</option>
+                        </select>
+                    </div>
+                </div>
+                <div class="table-container" style="max-height: 700px; overflow-y: auto;">
+                    <table>
+                        <thead>
+                            <tr>
+                                <th>IP Address</th>
+                                <th>Device</th>
+                                <th>Browser</th>
+                                <th>OS</th>
+                                <th>Screen</th>
+                                <th>Language</th>
+                                <th>Timezone</th>
+                                <th>Page</th>
+                                <th>Connection</th>
+                                <th>Touch</th>
+                                <th>Time</th>
+                            </tr>
+                        </thead>
+                        <tbody id="visitorLogsBody"></tbody>
+                    </table>
+                </div>
+                <div id="visitorLogsSummary" style="padding: 16px 0; text-align: center; color: var(--dim); font-size: 0.82rem;"></div>
+            </div>
+
             <!-- Tab: Users (Owner Only) -->
             <div class="tab-content" id="tab-users">
                 <div class="blog-form">
@@ -802,6 +840,7 @@
                 else if (target === 'coupons') loadCoupons();
                 else if (target === 'changelog') loadChangelog();
                 else if (target === 'analytics') loadAnalytics();
+                else if (target === 'visitors') loadVisitorLogs();
             });
         });
 
@@ -1648,6 +1687,84 @@
                 }
             } catch (err) { console.error('Failed to load analytics:', err); }
         }
+
+        // ── Visitor Logs ──────────────────
+        let visitorLogsData = [];
+
+        async function loadVisitorLogs() {
+            try {
+                const res = await fetch('/api/admin/analytics', { headers: apiHeaders() });
+                const data = await res.json();
+                if (!res.ok) return;
+                const a = data.analytics || data;
+                visitorLogsData = a.recentVisitors || [];
+                renderVisitorLogs();
+            } catch (err) { console.error('Failed to load visitor logs:', err); }
+        }
+
+        function renderVisitorLogs() {
+            const searchVal = (document.getElementById('visitorSearch').value || '').toLowerCase();
+            const deviceVal = document.getElementById('visitorDeviceFilter').value;
+
+            let filtered = [...visitorLogsData];
+            if (deviceVal !== 'all') {
+                filtered = filtered.filter(v => v.device === deviceVal);
+            }
+            if (searchVal) {
+                filtered = filtered.filter(v =>
+                    (v.ip || '').toLowerCase().includes(searchVal) ||
+                    (v.page || '').toLowerCase().includes(searchVal) ||
+                    (v.browser || '').toLowerCase().includes(searchVal) ||
+                    (v.os || '').toLowerCase().includes(searchVal) ||
+                    (v.timezone || '').toLowerCase().includes(searchVal) ||
+                    (v.language || '').toLowerCase().includes(searchVal)
+                );
+            }
+
+            const tbody = document.getElementById('visitorLogsBody');
+            const summary = document.getElementById('visitorLogsSummary');
+
+            if (filtered.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="11" style="text-align:center;color:var(--dim);padding:40px;"><i class="fas fa-ghost" style="font-size:2rem;opacity:0.3;display:block;margin-bottom:12px;"></i>No visitor logs found.</td></tr>';
+                summary.textContent = '';
+                return;
+            }
+
+            const deviceIcons = { 'Mobile': 'fa-mobile-alt', 'Tablet': 'fa-tablet-alt', 'Desktop': 'fa-desktop' };
+            const browserIcons = { 'Chrome': 'fa-brands fa-chrome', 'Firefox': 'fa-brands fa-firefox-browser', 'Safari': 'fa-brands fa-safari', 'Edge': 'fa-brands fa-edge', 'Opera': 'fa-brands fa-opera' };
+            const osIcons = { 'Windows 10/11': 'fa-brands fa-windows', 'Windows': 'fa-brands fa-windows', 'macOS': 'fa-brands fa-apple', 'iOS': 'fa-brands fa-apple', 'Android': 'fa-brands fa-android', 'Linux': 'fa-brands fa-linux', 'Chrome OS': 'fa-brands fa-chrome' };
+
+            tbody.innerHTML = filtered.map(v => {
+                const devIcon = deviceIcons[v.device] || 'fa-desktop';
+                const brIcon = browserIcons[v.browser] || 'fa-globe';
+                const osIcon = osIcons[v.os] || 'fa-question-circle';
+                const connBadge = v.connection ? `<span style="padding:2px 8px;border-radius:50px;font-size:0.68rem;font-weight:700;${v.connection === '4g' ? 'background:rgba(16,185,129,0.15);color:#10b981;' : v.connection === '3g' ? 'background:rgba(245,158,11,0.15);color:#f59e0b;' : 'background:rgba(239,68,68,0.15);color:#ef4444;'}">${escapeHtml(v.connection)}</span>` : '<span style="color:var(--dim);">—</span>';
+                const touchBadge = v.touch ? '<span style="color:#10b981;"><i class="fas fa-hand-pointer"></i> Yes</span>' : '<span style="color:var(--dim);">No</span>';
+                const ago = v.timestamp ? formatDate(v.timestamp) : '—';
+
+                return `<tr>
+                    <td><code style="background:var(--bg);padding:4px 8px;border-radius:6px;font-size:0.76rem;color:var(--accent2);">${escapeHtml(v.ip)}</code></td>
+                    <td><i class="fas ${devIcon}" style="color:var(--accent);margin-right:5px;"></i><span style="font-size:0.82rem;">${escapeHtml(v.device)}</span></td>
+                    <td><i class="${brIcon}" style="color:var(--accent2);margin-right:5px;"></i><span style="font-size:0.82rem;">${escapeHtml(v.browser)}</span></td>
+                    <td><i class="${osIcon}" style="color:var(--dim);margin-right:5px;"></i><span style="font-size:0.82rem;">${escapeHtml(v.os)}</span></td>
+                    <td style="font-size:0.78rem;color:var(--dim);">${v.screen || '—'}<br><span style="font-size:0.68rem;color:var(--muted);">${v.viewport ? 'vp ' + v.viewport : ''}</span></td>
+                    <td style="font-size:0.8rem;">${v.language ? escapeHtml(v.language) : '<span style="color:var(--dim);">—</span>'}</td>
+                    <td style="font-size:0.78rem;color:var(--dim);">${v.timezone ? escapeHtml(v.timezone) : '—'}</td>
+                    <td style="font-size:0.8rem;color:var(--dim);">${escapeHtml(v.page || '/')}</td>
+                    <td>${connBadge}</td>
+                    <td>${touchBadge}</td>
+                    <td class="td-date">${ago}</td>
+                </tr>`;
+            }).join('');
+
+            const uniqueIps = new Set(filtered.map(v => v.ip)).size;
+            const mobileCount = filtered.filter(v => v.device === 'Mobile').length;
+            const desktopCount = filtered.filter(v => v.device === 'Desktop').length;
+            summary.innerHTML = `Showing <strong>${filtered.length}</strong> entries &middot; <strong>${uniqueIps}</strong> unique IPs &middot; <strong>${desktopCount}</strong> desktop &middot; <strong>${mobileCount}</strong> mobile`;
+        }
+
+        document.getElementById('visitorSearch').addEventListener('input', renderVisitorLogs);
+        document.getElementById('visitorDeviceFilter').addEventListener('change', renderVisitorLogs);
 
         // ── Search & Filter ────────────────
         let searchTimeout;

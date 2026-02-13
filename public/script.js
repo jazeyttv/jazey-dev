@@ -526,16 +526,30 @@
     }
 
     // ══════════════════════════════════════
-    // PAGE VIEW TRACKING
+    // PAGE VIEW TRACKING (with device info)
     // ══════════════════════════════════════
     try {
+        const trackData = {
+            page: window.location.pathname,
+            referrer: document.referrer || '',
+            screen_width: screen.width,
+            screen_height: screen.height,
+            viewport_width: window.innerWidth,
+            viewport_height: window.innerHeight,
+            language: navigator.language || '',
+            platform: navigator.platform || '',
+            timezone: Intl.DateTimeFormat().resolvedOptions().timeZone || '',
+            color_depth: screen.colorDepth || 0,
+            pixel_ratio: window.devicePixelRatio || 1,
+            touch: 'ontouchstart' in window || navigator.maxTouchPoints > 0,
+            connection: navigator.connection ? (navigator.connection.effectiveType || '') : '',
+            cores: navigator.hardwareConcurrency || 0,
+            memory: navigator.deviceMemory || 0
+        };
         fetch('/api/track', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                page: window.location.pathname,
-                referrer: document.referrer || ''
-            })
+            body: JSON.stringify(trackData)
         });
     } catch (e) {
         // Silent

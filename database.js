@@ -541,6 +541,17 @@ class JsonDatabase {
                 os,
                 device,
                 referrer: v.referrer || 'direct',
+                screen: v.screen_width && v.screen_height ? `${v.screen_width}x${v.screen_height}` : null,
+                viewport: v.viewport_width && v.viewport_height ? `${v.viewport_width}x${v.viewport_height}` : null,
+                language: v.language || null,
+                platform: v.platform || null,
+                timezone: v.timezone || null,
+                color_depth: v.color_depth || null,
+                pixel_ratio: v.pixel_ratio || null,
+                touch: v.touch || false,
+                connection: v.connection || null,
+                cores: v.cores || null,
+                memory: v.memory || null,
                 timestamp: v.created_at
             };
         });
