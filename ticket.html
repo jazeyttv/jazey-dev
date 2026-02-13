@@ -194,6 +194,51 @@
             color: var(--text); font-size: 0.92rem; line-height: 1.7;
         }
 
+        /* Deliverable Files */
+        .files-section {
+            padding: 24px 28px; border-bottom: 1px solid var(--border); display: none;
+        }
+
+        .files-section.show { display: block; }
+
+        .files-label {
+            display: flex; align-items: center; gap: 8px;
+            font-size: 0.7rem; font-weight: 600; color: var(--green);
+            text-transform: uppercase; letter-spacing: 1.5px; margin-bottom: 12px;
+        }
+
+        .files-list { display: flex; flex-direction: column; gap: 8px; }
+
+        .file-item {
+            display: flex; align-items: center; gap: 12px;
+            padding: 12px 16px; background: rgba(16,185,129,0.05);
+            border: 1px solid rgba(16,185,129,0.12); border-radius: 10px;
+            transition: 0.2s;
+        }
+
+        .file-item:hover { background: rgba(16,185,129,0.1); }
+
+        .file-icon { color: var(--green); font-size: 1rem; }
+
+        .file-info { flex: 1; }
+        .file-name { font-size: 0.9rem; font-weight: 600; color: var(--text); }
+
+        .file-download {
+            padding: 6px 14px; background: rgba(16,185,129,0.12); border: 1px solid rgba(16,185,129,0.2);
+            border-radius: 8px; color: var(--green); font-size: 0.78rem; font-weight: 600;
+            text-decoration: none; transition: 0.2s;
+        }
+
+        .file-download:hover { background: rgba(16,185,129,0.2); }
+
+        /* Priority Badge */
+        .priority-badge {
+            display: inline-flex; align-items: center; gap: 6px;
+            padding: 4px 12px; background: rgba(245,158,11,0.12);
+            border-radius: 50px; font-size: 0.7rem; font-weight: 700;
+            color: var(--yellow); text-transform: uppercase; letter-spacing: 0.5px;
+        }
+
         /* Progress Section */
         .progress-section { padding: 28px; }
 
@@ -490,6 +535,11 @@
                             <div class="client-msg-body" id="clientMsgBody"></div>
                         </div>
 
+                        <div class="files-section" id="filesSection">
+                            <div class="files-label"><i class="fas fa-download"></i> Deliverable Files</div>
+                            <div class="files-list" id="filesList"></div>
+                        </div>
+
                         <div class="progress-section">
                             <div class="progress-title">Development Progress</div>
                             <div class="timeline" id="timeline">
@@ -767,6 +817,21 @@
             pill.className = 'status-pill ' + pc.cls;
             pillText.textContent = pc.text;
 
+            // Priority badge
+            const topLeft = document.querySelector('.status-card-top-left');
+            let priBadge = document.getElementById('priorityBadge');
+            if (t.priority) {
+                if (!priBadge) {
+                    priBadge = document.createElement('span');
+                    priBadge.id = 'priorityBadge';
+                    priBadge.className = 'priority-badge';
+                    priBadge.innerHTML = '<i class="fas fa-bolt"></i> Rush Order';
+                    topLeft.appendChild(priBadge);
+                }
+            } else if (priBadge) {
+                priBadge.remove();
+            }
+
             // Client message
             const msgEl = document.getElementById('clientMsg');
             const msgBody = document.getElementById('clientMsgBody');
@@ -775,6 +840,22 @@
                 msgEl.classList.add('show');
             } else {
                 msgEl.classList.remove('show');
+            }
+
+            // Deliverable files
+            const filesSection = document.getElementById('filesSection');
+            const filesList = document.getElementById('filesList');
+            if (t.files && t.files.length > 0) {
+                filesSection.classList.add('show');
+                filesList.innerHTML = t.files.map(f => `
+                    <div class="file-item">
+                        <div class="file-icon"><i class="fas fa-file-archive"></i></div>
+                        <div class="file-info"><div class="file-name">${escapeHtml(f.name)}</div></div>
+                        <a href="${escapeHtml(f.url)}" target="_blank" class="file-download"><i class="fas fa-download"></i> Download</a>
+                    </div>
+                `).join('');
+            } else {
+                filesSection.classList.remove('show');
             }
 
             // Timeline

@@ -397,11 +397,15 @@
             const btn = this.querySelector('button[type="submit"]');
             const originalContent = btn.innerHTML;
 
+            const couponEl = document.getElementById('coupon');
+            const referral = new URLSearchParams(window.location.search).get('ref') || null;
             const formData = {
                 name: document.getElementById('name').value.trim(),
                 discord: document.getElementById('discord').value.trim(),
                 service: document.getElementById('service').value,
-                message: document.getElementById('message').value.trim()
+                message: document.getElementById('message').value.trim(),
+                coupon: couponEl ? couponEl.value.trim().toUpperCase() || null : null,
+                referral: referral
             };
 
             if (!formData.name || !formData.discord || !formData.service || !formData.message) {
@@ -456,6 +460,45 @@
                 }, 3000);
             }
         });
+    }
+
+    // ══════════════════════════════════════
+    // COUPON VALIDATION
+    // ══════════════════════════════════════
+    const couponInput = document.getElementById('coupon');
+    const couponStatus = document.getElementById('couponStatus');
+    if (couponInput && couponStatus) {
+        let couponTimeout;
+        couponInput.addEventListener('input', () => {
+            clearTimeout(couponTimeout);
+            const code = couponInput.value.trim();
+            if (!code) { couponStatus.innerHTML = ''; return; }
+            couponTimeout = setTimeout(async () => {
+                try {
+                    const res = await fetch('/api/coupon/validate', {
+                        method: 'POST',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ code })
+                    });
+                    const data = await res.json();
+                    if (data.success) {
+                        couponStatus.innerHTML = `<span style="color:#10b981;font-size:0.8rem;"><i class="fas fa-check-circle"></i> ${data.discount_percent}% discount applied!</span>`;
+                    } else {
+                        couponStatus.innerHTML = `<span style="color:#ef4444;font-size:0.8rem;"><i class="fas fa-times-circle"></i> Invalid code</span>`;
+                    }
+                } catch (e) {
+                    couponStatus.innerHTML = '';
+                }
+            }, 500);
+        });
+    }
+
+    // ══════════════════════════════════════
+    // REFERRAL TRACKING
+    // ══════════════════════════════════════
+    const refCode = new URLSearchParams(window.location.search).get('ref');
+    if (refCode) {
+        sessionStorage.setItem('jazey_referral', refCode);
     }
 
     // ══════════════════════════════════════

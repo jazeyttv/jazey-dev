@@ -203,6 +203,25 @@
         .status-testing { background: rgba(139,92,246,0.15); color: #8b5cf6; }
         .status-completed { background: rgba(16,185,129,0.15); color: var(--green); }
         .status-cancelled { background: rgba(239,68,68,0.15); color: var(--red); }
+        .status-approved { background: rgba(16,185,129,0.15); color: var(--green); }
+        .status-pending { background: rgba(245,158,11,0.15); color: var(--yellow); }
+        .status-active { background: rgba(108,99,255,0.15); color: var(--accent); }
+        .status-inactive { background: rgba(239,68,68,0.15); color: var(--red); }
+
+        /* Kanban */
+        .kanban-board { display: flex; gap: 16px; overflow-x: auto; padding-bottom: 16px; }
+        .kanban-col { min-width: 200px; flex: 1; background: var(--bg-card); border: 1px solid var(--border); border-radius: var(--radius); }
+        .kanban-col-header { padding: 12px 16px; border-bottom: 1px solid var(--border); font-size: 0.8rem; font-weight: 700; text-transform: uppercase; letter-spacing: 1px; display: flex; align-items: center; justify-content: space-between; }
+        .kanban-col-header .count { padding: 2px 8px; background: rgba(255,255,255,0.05); border-radius: 50px; font-size: 0.7rem; }
+        .kanban-cards { padding: 8px; min-height: 100px; }
+        .kanban-card { padding: 12px; background: var(--bg-hover); border: 1px solid var(--border); border-radius: 8px; margin-bottom: 8px; cursor: grab; transition: 0.2s; }
+        .kanban-card:hover { border-color: var(--accent); }
+        .kanban-card.dragging { opacity: 0.5; }
+        .kanban-card .kc-id { font-size: 0.7rem; color: var(--text-muted); }
+        .kanban-card .kc-name { font-weight: 600; font-size: 0.85rem; margin: 4px 0; }
+        .kanban-card .kc-service { font-size: 0.75rem; color: var(--text-secondary); }
+        .kanban-card.priority { border-left: 3px solid var(--yellow); }
+        .kanban-col.drag-over { background: rgba(108,99,255,0.05); }
 
         /* Action buttons */
         .action-btns { display: flex; gap: 6px; }
@@ -242,6 +261,9 @@
         }
 
         .modal-field textarea:focus, .modal-field select:focus, .modal-field input:focus { border-color: var(--accent); }
+        .modal-field.priority-field { display: flex; align-items: center; }
+        .modal-field.priority-field label { margin-bottom: 0; display: flex; align-items: center; gap: 8px; cursor: pointer; text-transform: none; letter-spacing: 0; }
+        .modal-field.priority-field input[type="checkbox"] { width: auto; margin: 0; }
 
         .modal-actions { display: flex; gap: 12px; margin-top: 24px; }
 
@@ -429,6 +451,11 @@
             <div class="admin-tabs">
                 <button class="admin-tab active" data-tab="overview"><i class="fas fa-chart-bar"></i>&nbsp; Overview</button>
                 <button class="admin-tab" data-tab="submissions"><i class="fas fa-inbox"></i>&nbsp; Submissions</button>
+                <button class="admin-tab" data-tab="kanban"><i class="fas fa-columns"></i>&nbsp; Kanban</button>
+                <button class="admin-tab" data-tab="reviews"><i class="fas fa-star"></i>&nbsp; Reviews</button>
+                <button class="admin-tab" data-tab="coupons"><i class="fas fa-tags"></i>&nbsp; Coupons</button>
+                <button class="admin-tab" data-tab="changelog"><i class="fas fa-scroll"></i>&nbsp; Changelog</button>
+                <button class="admin-tab" data-tab="analytics"><i class="fas fa-chart-line"></i>&nbsp; Analytics</button>
                 <button class="admin-tab" data-tab="blog"><i class="fas fa-pen-fancy"></i>&nbsp; Blog Manager</button>
             </div>
 
@@ -525,6 +552,110 @@
                     </table>
                 </div>
             </div>
+
+            <!-- Tab: Kanban -->
+            <div class="tab-content" id="tab-kanban">
+                <div class="toolbar">
+                    <h3>Kanban Board</h3>
+                    <div class="toolbar-actions">
+                        <button class="refresh-btn" id="refreshKanbanBtn"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                </div>
+                <div class="kanban-board" id="kanbanBoard">
+                    <div class="kanban-col" data-status="new"><div class="kanban-col-header">Received <span class="count" id="kc-new">0</span></div><div class="kanban-cards" id="kanban-new"></div></div>
+                    <div class="kanban-col" data-status="reviewing"><div class="kanban-col-header">Reviewing <span class="count" id="kc-reviewing">0</span></div><div class="kanban-cards" id="kanban-reviewing"></div></div>
+                    <div class="kanban-col" data-status="in-progress"><div class="kanban-col-header">In Dev <span class="count" id="kc-in-progress">0</span></div><div class="kanban-cards" id="kanban-in-progress"></div></div>
+                    <div class="kanban-col" data-status="testing"><div class="kanban-col-header">Testing <span class="count" id="kc-testing">0</span></div><div class="kanban-cards" id="kanban-testing"></div></div>
+                    <div class="kanban-col" data-status="completed"><div class="kanban-col-header">Delivered <span class="count" id="kc-completed">0</span></div><div class="kanban-cards" id="kanban-completed"></div></div>
+                    <div class="kanban-col" data-status="cancelled"><div class="kanban-col-header">Cancelled <span class="count" id="kc-cancelled">0</span></div><div class="kanban-cards" id="kanban-cancelled"></div></div>
+                </div>
+            </div>
+
+            <!-- Tab: Reviews -->
+            <div class="tab-content" id="tab-reviews">
+                <div class="toolbar">
+                    <h3>Client Reviews</h3>
+                    <div class="toolbar-actions">
+                        <button class="refresh-btn" id="refreshReviewsBtn"><i class="fas fa-sync-alt"></i></button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Name</th><th>Rating</th><th>Service</th><th>Text</th><th>Status</th><th>Date</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="reviewsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Coupons -->
+            <div class="tab-content" id="tab-coupons">
+                <div class="blog-form">
+                    <h4><i class="fas fa-plus-circle"></i>&nbsp; Create Coupon</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr 1fr auto; gap: 12px; align-items: end;">
+                        <div><label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Code</label><input type="text" id="couponCode" placeholder="e.g. WELCOME10"></div>
+                        <div><label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Discount %</label><input type="number" id="couponDiscount" placeholder="10" min="1" max="100"></div>
+                        <div><label style="font-size: 0.75rem; color: var(--text-muted); margin-bottom: 4px; display: block;">Max Uses</label><input type="number" id="couponMaxUses" placeholder="100" min="1"></div>
+                        <button class="blog-submit-btn" id="couponCreateBtn"><i class="fas fa-plus"></i>&nbsp; Create</button>
+                    </div>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Code</th><th>Discount %</th><th>Uses / Max</th><th>Active</th><th>Date</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="couponsBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Changelog -->
+            <div class="tab-content" id="tab-changelog">
+                <div class="blog-form">
+                    <h4><i class="fas fa-plus-circle"></i>&nbsp; New Changelog Entry</h4>
+                    <input type="text" id="changelogTitle" placeholder="Title...">
+                    <textarea id="changelogContent" placeholder="Content..." rows="4"></textarea>
+                    <div style="display: flex; gap: 12px; align-items: center; margin-bottom: 12px;">
+                        <label style="font-size: 0.75rem; color: var(--text-muted);">Type</label>
+                        <select id="changelogType" style="padding: 10px 16px; background: var(--bg); border: 1px solid var(--border); border-radius: 8px; color: #fff;">
+                            <option value="feature">Feature</option>
+                            <option value="improvement">Improvement</option>
+                            <option value="fix">Fix</option>
+                        </select>
+                    </div>
+                    <button class="blog-submit-btn" id="changelogPublishBtn"><i class="fas fa-paper-plane"></i>&nbsp; Publish</button>
+                </div>
+                <div class="table-container">
+                    <table>
+                        <thead>
+                            <tr><th>ID</th><th>Title</th><th>Type</th><th>Date</th><th>Actions</th></tr>
+                        </thead>
+                        <tbody id="changelogBody"></tbody>
+                    </table>
+                </div>
+            </div>
+
+            <!-- Tab: Analytics -->
+            <div class="tab-content" id="tab-analytics">
+                <div class="stats-grid" id="analyticsStats">
+                    <div class="stat-card"><div class="stat-card-header"><span>Total Views</span><div class="stat-card-icon icon-orange"><i class="fas fa-eye"></i></div></div><div class="stat-card-value" id="analyticsTotalViews">—</div></div>
+                    <div class="stat-card"><div class="stat-card-header"><span>Today Views</span><div class="stat-card-icon icon-green"><i class="fas fa-chart-line"></i></div></div><div class="stat-card-value" id="analyticsTodayViews">—</div></div>
+                    <div class="stat-card"><div class="stat-card-header"><span>Unique Referrers</span><div class="stat-card-icon icon-blue"><i class="fas fa-external-link-alt"></i></div></div><div class="stat-card-value" id="analyticsReferrers">—</div></div>
+                </div>
+                <div class="charts-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="chart-card"><h4>Views by Day (Last 30 Days)</h4><canvas id="analyticsLineChart" height="120"></canvas></div>
+                    <div class="chart-card"><h4>Browser Breakdown</h4><canvas id="analyticsDoughnutChart" height="120"></canvas></div>
+                </div>
+                <div class="charts-grid" style="grid-template-columns: 1fr 1fr;">
+                    <div class="chart-card"><h4>Hourly Traffic</h4><canvas id="analyticsBarChart" height="120"></canvas></div>
+                    <div class="chart-card"><h4>Top Referrers</h4><canvas id="analyticsRefChart" height="120"></canvas></div>
+                </div>
+                <div class="chart-card" style="margin-top: 20px;">
+                    <h4>Device Split</h4>
+                    <div id="analyticsDeviceSplit" style="display: flex; flex-direction: column; gap: 12px;"></div>
+                </div>
+            </div>
         </div>
     </div>
 
@@ -553,6 +684,9 @@
                 </div>
             </div>
 
+            <div class="modal-field priority-field">
+                <label><input type="checkbox" id="modalPriority"> Rush/Priority Order</label>
+            </div>
             <div class="modal-field">
                 <label>Status</label>
                 <select id="modalStatus">
@@ -566,6 +700,15 @@
             </div>
             <div class="modal-field"><label>Client Message <span style="color:var(--accent);font-size:0.65rem;font-weight:400;">(visible on ticket tracker)</span></label><textarea id="modalClientMsg" rows="2" placeholder="Update for the client, e.g. 'Working on your heist script — 70% done!'"></textarea></div>
             <div class="modal-field"><label>Internal Notes <span style="color:var(--text-muted);font-size:0.65rem;font-weight:400;">(private, only you see this)</span></label><textarea id="modalNotes" rows="3" placeholder="Add notes about this project..."></textarea></div>
+            <div class="modal-field">
+                <label>Deliverable Files</label>
+                <div id="modalFilesList" style="margin-bottom: 10px;"></div>
+                <div style="display: flex; gap: 8px; align-items: center; flex-wrap: wrap;">
+                    <input type="text" id="modalFileName" placeholder="File name" style="flex: 1; min-width: 120px;">
+                    <input type="text" id="modalFileUrl" placeholder="URL" style="flex: 2; min-width: 180px;">
+                    <button type="button" class="modal-btn modal-btn-save" id="modalFileAddBtn" style="flex: none; padding: 10px 16px;">Add</button>
+                </div>
+            </div>
             <div class="modal-actions">
                 <button class="modal-btn modal-btn-cancel" id="modalCancel">Cancel</button>
                 <button class="modal-btn modal-btn-save" id="modalSave">Save Changes</button>
@@ -584,6 +727,7 @@
         let adminUsername = '';
         let adminPassword = '';
         let currentSubmissionId = null;
+        let currentModalFiles = [];
         let dailyChartInstance = null;
         let serviceChartInstance = null;
 
@@ -605,6 +749,11 @@
                 const target = tab.dataset.tab;
                 document.getElementById('tab-' + target).classList.add('active');
                 if (target === 'blog') loadBlogPosts();
+                else if (target === 'kanban') loadKanban();
+                else if (target === 'reviews') loadReviews();
+                else if (target === 'coupons') loadCoupons();
+                else if (target === 'changelog') loadChangelog();
+                else if (target === 'analytics') loadAnalytics();
             });
         });
 
@@ -854,9 +1003,12 @@
                 document.getElementById('modalService').textContent = serviceNames[sub.service] || sub.service;
                 document.getElementById('modalMessage').textContent = sub.message;
                 document.getElementById('modalDate').textContent = new Date(sub.created_at).toLocaleString();
+                document.getElementById('modalPriority').checked = !!sub.priority;
                 document.getElementById('modalStatus').value = sub.status;
                 document.getElementById('modalClientMsg').value = sub.client_message || '';
                 document.getElementById('modalNotes').value = sub.notes || '';
+                currentModalFiles = Array.isArray(sub.files) ? sub.files.slice() : [];
+                renderModalFiles();
 
                 // Load chat messages
                 renderAdminChat(sub.messages || [], sub.name);
@@ -946,10 +1098,42 @@
             const status = document.getElementById('modalStatus').value;
             const client_message = document.getElementById('modalClientMsg').value;
             const notes = document.getElementById('modalNotes').value;
+            const priority = document.getElementById('modalPriority').checked;
+            const files = currentModalFiles;
             try {
-                const res = await fetch(`/api/admin/submissions/${currentSubmissionId}`, { method: 'PATCH', headers: apiHeaders(), body: JSON.stringify({ status, client_message, notes }) });
-                if (res.ok) { showToast('Updated!', 'success'); document.getElementById('detailModal').classList.remove('active'); loadSubmissions(); loadStats(); }
+                const res = await fetch(`/api/admin/submissions/${currentSubmissionId}`, { method: 'PATCH', headers: apiHeaders(), body: JSON.stringify({ status, client_message, notes, priority, files }) });
+                if (res.ok) { showToast('Updated!', 'success'); document.getElementById('detailModal').classList.remove('active'); loadSubmissions(); loadStats(); if (typeof loadKanban === 'function') loadKanban(); }
             } catch { showToast('Failed to save', 'error'); }
+        });
+
+        function renderModalFiles() {
+            const container = document.getElementById('modalFilesList');
+            if (currentModalFiles.length === 0) {
+                container.innerHTML = '<span style="color: var(--text-muted); font-size: 0.85rem;">No files added.</span>';
+                return;
+            }
+            container.innerHTML = currentModalFiles.map((f, i) => `
+                <div style="display: flex; align-items: center; gap: 8px; margin-bottom: 6px; padding: 8px; background: var(--bg); border-radius: 8px;">
+                    <span style="flex: 1; font-size: 0.85rem;">${escapeHtml(f.name || 'Unnamed')}</span>
+                    <a href="${escapeHtml(f.url || '#')}" target="_blank" rel="noopener" style="font-size: 0.8rem; color: var(--accent);">Link</a>
+                    <button type="button" class="action-btn delete" onclick="removeModalFile(${i})" title="Remove"><i class="fas fa-times"></i></button>
+                </div>
+            `).join('');
+        }
+
+        function removeModalFile(index) {
+            currentModalFiles.splice(index, 1);
+            renderModalFiles();
+        }
+
+        document.getElementById('modalFileAddBtn').addEventListener('click', () => {
+            const name = document.getElementById('modalFileName').value.trim();
+            const url = document.getElementById('modalFileUrl').value.trim();
+            if (!name || !url) { showToast('Name and URL required', 'error'); return; }
+            currentModalFiles.push({ name, url });
+            document.getElementById('modalFileName').value = '';
+            document.getElementById('modalFileUrl').value = '';
+            renderModalFiles();
         });
 
         async function deleteSubmission(id) {
@@ -1030,6 +1214,336 @@
         }
 
         document.getElementById('refreshBlogBtn').addEventListener('click', loadBlogPosts);
+
+        // ── Kanban ─────────────────────────
+        const KANBAN_STATUSES = ['new', 'reviewing', 'in-progress', 'testing', 'completed', 'cancelled'];
+        let kanbanSubmissions = [];
+
+        async function loadKanban() {
+            try {
+                const res = await fetch('/api/admin/submissions?limit=500', { headers: apiHeaders() });
+                const data = await res.json();
+                if (!data.success) return;
+                kanbanSubmissions = data.submissions || [];
+                KANBAN_STATUSES.forEach(status => {
+                    const list = document.getElementById('kanban-' + status);
+                    const countEl = document.getElementById('kc-' + status);
+                    const items = kanbanSubmissions.filter(s => s.status === status);
+                    countEl.textContent = items.length;
+                    list.innerHTML = items.map(s => {
+                        const d = s.created_at ? new Date(s.created_at).toLocaleDateString() : '—';
+                        return `<div class="kanban-card ${s.priority ? 'priority' : ''}" draggable="true" data-id="${s.id}">
+                            <div class="kc-id">#${s.id} · ${d}</div>
+                            <div class="kc-name">${escapeHtml(s.name)}</div>
+                            <div class="kc-service">${serviceNames[s.service] || s.service}</div>
+                        </div>`;
+                    }).join('');
+                    list.querySelectorAll('.kanban-card').forEach(card => {
+                        card.addEventListener('dragstart', onKanbanDragStart);
+                        card.addEventListener('dragend', onKanbanDragEnd);
+                    });
+                });
+                document.querySelectorAll('.kanban-col').forEach(col => {
+                    col.addEventListener('dragover', onKanbanDragOver);
+                    col.addEventListener('dragleave', onKanbanDragLeave);
+                    col.addEventListener('drop', onKanbanDrop);
+                });
+            } catch (err) { console.error('Failed to load kanban:', err); }
+        }
+
+        let kanbanDraggingId = null;
+
+        function onKanbanDragStart(e) {
+            kanbanDraggingId = e.target.dataset.id;
+            e.target.classList.add('dragging');
+            e.dataTransfer.effectAllowed = 'move';
+            e.dataTransfer.setData('text/plain', e.target.dataset.id);
+        }
+
+        function onKanbanDragEnd(e) {
+            e.target.classList.remove('dragging');
+            document.querySelectorAll('.kanban-col').forEach(c => c.classList.remove('drag-over'));
+            kanbanDraggingId = null;
+        }
+
+        function onKanbanDragOver(e) {
+            e.preventDefault();
+            e.dataTransfer.dropEffect = 'move';
+            e.currentTarget.classList.add('drag-over');
+        }
+
+        function onKanbanDragLeave(e) {
+            e.currentTarget.classList.remove('drag-over');
+        }
+
+        async function onKanbanDrop(e) {
+            e.preventDefault();
+            e.currentTarget.classList.remove('drag-over');
+            const id = e.dataTransfer.getData('text/plain');
+            const newStatus = e.currentTarget.dataset.status;
+            if (!id || !newStatus) return;
+            const sub = kanbanSubmissions.find(s => String(s.id) === id);
+            if (sub && sub.status === newStatus) return;
+            try {
+                const res = await fetch(`/api/admin/submissions/${id}`, { method: 'PATCH', headers: apiHeaders(), body: JSON.stringify({ status: newStatus }) });
+                if (res.ok) { showToast('Status updated', 'success'); loadKanban(); }
+                else showToast('Failed to update', 'error');
+            } catch { showToast('Failed to update', 'error'); }
+        }
+
+        document.getElementById('refreshKanbanBtn').addEventListener('click', loadKanban);
+
+        // ── Reviews ─────────────────────────
+        async function loadReviews() {
+            try {
+                const res = await fetch('/api/admin/reviews', { headers: apiHeaders() });
+                const data = await res.json();
+                const tbody = document.getElementById('reviewsBody');
+                const list = Array.isArray(data) ? data : (data.reviews || []);
+                if (list.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fas fa-star"></i><p>No reviews yet.</p></div></td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = list.map(r => reviewRow(r)).join('');
+            } catch (err) { console.error('Failed to load reviews:', err); document.getElementById('reviewsBody').innerHTML = `<tr><td colspan="8"><div class="empty-state">Failed to load.</div></td></tr>`; }
+        }
+
+        function reviewRow(r) {
+            const stars = (r.rating || 0);
+            const starHtml = '<i class="fas fa-star" style="color: var(--yellow);"></i>'.repeat(Math.min(5, stars)) + '<i class="fas fa-star" style="color: var(--text-muted);"></i>'.repeat(Math.max(0, 5 - stars));
+            const text = (r.text || r.review || '').slice(0, 60) + ((r.text || r.review || '').length > 60 ? '…' : '');
+            const status = (r.approved === true || r.status === 'approved') ? 'Approved' : 'Pending';
+            const statusClass = status === 'Approved' ? 'status-approved' : 'status-pending';
+            const date = r.created_at || r.date ? new Date(r.created_at || r.date).toLocaleDateString() : '—';
+            return `<tr>
+                <td style="color: var(--text-muted);">#${r.id}</td>
+                <td class="td-name">${escapeHtml(r.name || r.client_name || '—')}</td>
+                <td>${starHtml}</td>
+                <td>${escapeHtml(r.service || '—')}</td>
+                <td class="td-message" title="${escapeHtml(r.text || r.review || '')}">${escapeHtml(text)}</td>
+                <td><span class="status-badge ${statusClass}">${status}</span></td>
+                <td class="td-date">${date}</td>
+                <td><div class="action-btns">
+                    ${status === 'Pending' ? `<button class="action-btn" onclick="approveReview(${r.id})" title="Approve"><i class="fas fa-check"></i></button>` : ''}
+                    <button class="action-btn delete" onclick="deleteReview(${r.id})" title="Delete"><i class="fas fa-trash"></i></button>
+                </div></td>
+            </tr>`;
+        }
+
+        async function approveReview(id) {
+            try {
+                const res = await fetch(`/api/admin/reviews/${id}/approve`, { method: 'PATCH', headers: apiHeaders() });
+                if (res.ok) { showToast('Review approved', 'success'); loadReviews(); }
+                else showToast('Failed to approve', 'error');
+            } catch { showToast('Failed to approve', 'error'); }
+        }
+
+        async function deleteReview(id) {
+            if (!confirm('Delete this review?')) return;
+            try {
+                const res = await fetch(`/api/admin/reviews/${id}`, { method: 'DELETE', headers: apiHeaders() });
+                if (res.ok) { showToast('Review deleted', 'success'); loadReviews(); }
+                else showToast('Failed to delete', 'error');
+            } catch { showToast('Failed to delete', 'error'); }
+        }
+
+        document.getElementById('refreshReviewsBtn').addEventListener('click', loadReviews);
+
+        // ── Coupons ─────────────────────────
+        async function loadCoupons() {
+            try {
+                const res = await fetch('/api/admin/coupons', { headers: apiHeaders() });
+                const data = await res.json();
+                const list = data.coupons || data || [];
+                const tbody = document.getElementById('couponsBody');
+                if (list.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="7"><div class="empty-state"><i class="fas fa-tags"></i><p>No coupons yet.</p></div></td></tr>`;
+                    return;
+                }
+                tbody.innerHTML = list.map(c => {
+                    const active = c.active !== false;
+                    const uses = c.uses || 0;
+                    const max = c.max_uses || c.maxUses || 0;
+                    const date = c.created_at ? new Date(c.created_at).toLocaleDateString() : '—';
+                    return `<tr>
+                        <td style="color: var(--text-muted);">#${c.id}</td>
+                        <td class="td-name">${escapeHtml(c.code)}</td>
+                        <td>${c.discount_percent != null ? c.discount_percent : c.discountPercent || 0}%</td>
+                        <td>${uses} / ${max || '∞'}</td>
+                        <td><span class="status-badge ${active ? 'status-active' : 'status-inactive'}">${active ? 'Active' : 'Inactive'}</span></td>
+                        <td class="td-date">${date}</td>
+                        <td><div class="action-btns">
+                            <button class="action-btn" onclick="toggleCoupon(${c.id})" title="Toggle active"><i class="fas fa-toggle-on"></i></button>
+                            <button class="action-btn delete" onclick="deleteCoupon(${c.id})" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div></td>
+                    </tr>`;
+                }).join('');
+            } catch (err) { console.error('Failed to load coupons:', err); }
+        }
+
+        document.getElementById('couponCreateBtn').addEventListener('click', async () => {
+            const code = document.getElementById('couponCode').value.trim().toUpperCase();
+            const discount = parseInt(document.getElementById('couponDiscount').value, 10) || 0;
+            const maxUses = parseInt(document.getElementById('couponMaxUses').value, 10) || 0;
+            if (!code) { showToast('Code is required', 'error'); return; }
+            try {
+                const res = await fetch('/api/admin/coupons', {
+                    method: 'POST',
+                    headers: apiHeaders(),
+                    body: JSON.stringify({ code, discount_percent: discount, max_uses: maxUses })
+                });
+                const data = await res.json();
+                if (res.ok && (data.success !== false)) { showToast('Coupon created', 'success'); document.getElementById('couponCode').value = ''; document.getElementById('couponDiscount').value = ''; document.getElementById('couponMaxUses').value = ''; loadCoupons(); }
+                else showToast(data.error || 'Failed to create', 'error');
+            } catch { showToast('Failed to create coupon', 'error'); }
+        });
+
+        async function toggleCoupon(id) {
+            try {
+                const res = await fetch(`/api/admin/coupons/${id}/toggle`, { method: 'PATCH', headers: apiHeaders() });
+                if (res.ok) { showToast('Coupon updated', 'success'); loadCoupons(); }
+                else showToast('Failed to toggle', 'error');
+            } catch { showToast('Failed to toggle', 'error'); }
+        }
+
+        async function deleteCoupon(id) {
+            if (!confirm('Delete this coupon?')) return;
+            try {
+                const res = await fetch(`/api/admin/coupons/${id}`, { method: 'DELETE', headers: apiHeaders() });
+                if (res.ok) { showToast('Coupon deleted', 'success'); loadCoupons(); }
+                else showToast('Failed to delete', 'error');
+            } catch { showToast('Failed to delete', 'error'); }
+        }
+
+        // ── Changelog ───────────────────────
+        async function loadChangelog() {
+            try {
+                const res = await fetch('/api/admin/changelog', { headers: apiHeaders() });
+                const data = await res.json();
+                const list = data.changelog || data.entries || data || [];
+                const tbody = document.getElementById('changelogBody');
+                if (!Array.isArray(list) || list.length === 0) {
+                    tbody.innerHTML = `<tr><td colspan="5"><div class="empty-state"><i class="fas fa-scroll"></i><p>No changelog entries yet.</p></div></td></tr>`;
+                    return;
+                }
+                const typeColors = { feature: 'status-new', improvement: 'status-reviewing', fix: 'status-completed' };
+                tbody.innerHTML = list.map(e => {
+                    const type = (e.type || 'feature');
+                    const date = e.created_at ? new Date(e.created_at).toLocaleDateString() : '—';
+                    return `<tr>
+                        <td style="color: var(--text-muted);">#${e.id}</td>
+                        <td class="td-name">${escapeHtml(e.title)}</td>
+                        <td><span class="status-badge ${typeColors[type] || 'status-new'}">${type}</span></td>
+                        <td class="td-date">${date}</td>
+                        <td><div class="action-btns">
+                            <button class="action-btn delete" onclick="deleteChangelog(${e.id})" title="Delete"><i class="fas fa-trash"></i></button>
+                        </div></td>
+                    </tr>`;
+                }).join('');
+            } catch (err) { console.error('Failed to load changelog:', err); }
+        }
+
+        document.getElementById('changelogPublishBtn').addEventListener('click', async () => {
+            const title = document.getElementById('changelogTitle').value.trim();
+            const content = document.getElementById('changelogContent').value.trim();
+            const type = document.getElementById('changelogType').value;
+            if (!title || !content) { showToast('Title and content required', 'error'); return; }
+            try {
+                const res = await fetch('/api/admin/changelog', {
+                    method: 'POST',
+                    headers: apiHeaders(),
+                    body: JSON.stringify({ title, content, type })
+                });
+                const data = await res.json();
+                if (res.ok && (data.success !== false)) { showToast('Changelog published', 'success'); document.getElementById('changelogTitle').value = ''; document.getElementById('changelogContent').value = ''; loadChangelog(); }
+                else showToast(data.error || 'Failed to publish', 'error');
+            } catch { showToast('Failed to publish', 'error'); }
+        });
+
+        async function deleteChangelog(id) {
+            if (!confirm('Delete this changelog entry?')) return;
+            try {
+                const res = await fetch(`/api/admin/changelog/${id}`, { method: 'DELETE', headers: apiHeaders() });
+                if (res.ok) { showToast('Entry deleted', 'success'); loadChangelog(); }
+                else showToast('Failed to delete', 'error');
+            } catch { showToast('Failed to delete', 'error'); }
+        }
+
+        // ── Analytics ───────────────────────
+        let analyticsLineChart = null;
+        let analyticsDoughnutChart = null;
+        let analyticsBarChart = null;
+        let analyticsRefChart = null;
+
+        async function loadAnalytics() {
+            try {
+                const res = await fetch('/api/admin/analytics', { headers: apiHeaders() });
+                const data = await res.json();
+                if (!res.ok) { document.getElementById('analyticsTotalViews').textContent = '—'; return; }
+                const a = data.analytics || data;
+                document.getElementById('analyticsTotalViews').textContent = (a.totalViews != null ? a.totalViews : a.total_views) || '0';
+                document.getElementById('analyticsTodayViews').textContent = (a.todayViews != null ? a.todayViews : a.today_views) || '0';
+                document.getElementById('analyticsReferrers').textContent = (a.uniqueReferrers != null ? a.uniqueReferrers : a.unique_referrers) || '0';
+
+                const viewsByDay = a.viewsByDay || a.views_by_day || [];
+                const lineCtx = document.getElementById('analyticsLineChart');
+                if (analyticsLineChart) analyticsLineChart.destroy();
+                analyticsLineChart = new Chart(lineCtx, {
+                    type: 'line',
+                    data: {
+                        labels: viewsByDay.map(d => d.date ? new Date(d.date).toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) : ''),
+                        datasets: [{ label: 'Views', data: viewsByDay.map(d => d.views || d.count || 0), borderColor: '#6C63FF', backgroundColor: 'rgba(108,99,255,0.1)', fill: true, tension: 0.3 }]
+                    },
+                    options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#5e5e72' }, grid: { color: 'rgba(255,255,255,0.04)' } }, x: { ticks: { color: '#5e5e72', maxTicksLimit: 12 }, grid: { display: false } } } }
+                });
+
+                const browsers = a.browsers || a.browser_breakdown || [];
+                const doughnutCtx = document.getElementById('analyticsDoughnutChart');
+                if (analyticsDoughnutChart) analyticsDoughnutChart.destroy();
+                analyticsDoughnutChart = new Chart(doughnutCtx, {
+                    type: 'doughnut',
+                    data: {
+                        labels: browsers.map(b => b.name || b.browser || ''),
+                        datasets: [{ data: browsers.map(b => b.count || b.views || 0), backgroundColor: ['#6C63FF', '#00D4FF', '#3b82f6', '#10b981', '#f59e0b'], borderColor: '#13131d', borderWidth: 3 }]
+                    },
+                    options: { responsive: true, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: '#9090aa', font: { size: 11 } } } } }
+                });
+
+                const hourly = a.hourly || a.hourly_traffic || [];
+                const barCtx = document.getElementById('analyticsBarChart');
+                if (analyticsBarChart) analyticsBarChart.destroy();
+                analyticsBarChart = new Chart(barCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: hourly.map(h => (h.hour != null ? h.hour : h.hour_of_day) + ':00'),
+                        datasets: [{ label: 'Traffic', data: hourly.map(h => h.count || h.views || 0), backgroundColor: 'rgba(108,99,255,0.6)', borderColor: '#6C63FF', borderWidth: 1, borderRadius: 6, barPercentage: 0.7 }]
+                    },
+                    options: { indexAxis: 'x', responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#5e5e72' }, grid: { color: 'rgba(255,255,255,0.04)' } }, x: { ticks: { color: '#5e5e72', maxTicksLimit: 12 }, grid: { display: false } } } }
+                });
+
+                const referrers = a.topReferrers || a.top_referrers || [];
+                const refCtx = document.getElementById('analyticsRefChart');
+                if (analyticsRefChart) analyticsRefChart.destroy();
+                analyticsRefChart = new Chart(refCtx, {
+                    type: 'bar',
+                    data: {
+                        labels: referrers.slice(0, 10).map(r => (r.referrer || r.source || '').slice(0, 20)),
+                        datasets: [{ label: 'Referrers', data: referrers.slice(0, 10).map(r => r.count || r.views || 0), backgroundColor: 'rgba(0,212,255,0.6)', borderColor: '#00D4FF', borderWidth: 1, borderRadius: 6, barPercentage: 0.7 }]
+                    },
+                    options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { color: '#5e5e72' }, grid: { color: 'rgba(255,255,255,0.04)' } }, y: { ticks: { color: '#5e5e72', font: { size: 10 } }, grid: { display: false } } } }
+                });
+
+                const deviceSplit = a.deviceSplit || a.device_split || { mobile: 0, desktop: 0 };
+                const mobile = deviceSplit.mobile || 0;
+                const desktop = deviceSplit.desktop || 0;
+                const total = mobile + desktop || 1;
+                const container = document.getElementById('analyticsDeviceSplit');
+                container.innerHTML = `
+                    <div><div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Mobile</span><span>${Math.round(100 * mobile / total)}%</span></div><div style="height: 12px; background: var(--bg); border-radius: 50px; overflow: hidden;"><div style="height: 100%; width: ${100 * mobile / total}%; background: var(--accent); border-radius: 50px;"></div></div></div>
+                    <div><div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Desktop</span><span>${Math.round(100 * desktop / total)}%</span></div><div style="height: 12px; background: var(--bg); border-radius: 50px; overflow: hidden;"><div style="height: 100%; width: ${100 * desktop / total}%; background: var(--green); border-radius: 50px;"></div></div></div>
+                `;
+            } catch (err) { console.error('Failed to load analytics:', err); }
+        }
 
         // ── Search & Filter ────────────────
         let searchTimeout;

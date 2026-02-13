@@ -9,7 +9,21 @@ const path = require('path');
 class JsonDatabase {
     constructor(filepath) {
         this.filepath = filepath;
-        this.data = { submissions: [], pageViews: [], blogPosts: [], nextId: 1, nextBlogId: 1 };
+        this.data = {
+            submissions: [],
+            pageViews: [],
+            blogPosts: [],
+            nextId: 1,
+            nextBlogId: 1,
+            reviews: [],
+            nextReviewId: 1,
+            portfolio: [],
+            nextPortfolioId: 1,
+            coupons: [],
+            nextCouponId: 1,
+            changelog: [],
+            nextChangelogId: 1
+        };
         this.load();
     }
 
@@ -21,6 +35,18 @@ class JsonDatabase {
                 // Migrate: ensure blogPosts array exists
                 if (!this.data.blogPosts) this.data.blogPosts = [];
                 if (!this.data.nextBlogId) this.data.nextBlogId = 1;
+                // Migrate: ensure reviews array and counter exist
+                if (!this.data.reviews) this.data.reviews = [];
+                if (!this.data.nextReviewId) this.data.nextReviewId = 1;
+                // Migrate: ensure portfolio array and counter exist
+                if (!this.data.portfolio) this.data.portfolio = [];
+                if (!this.data.nextPortfolioId) this.data.nextPortfolioId = 1;
+                // Migrate: ensure coupons array and counter exist
+                if (!this.data.coupons) this.data.coupons = [];
+                if (!this.data.nextCouponId) this.data.nextCouponId = 1;
+                // Migrate: ensure changelog array and counter exist
+                if (!this.data.changelog) this.data.changelog = [];
+                if (!this.data.nextChangelogId) this.data.nextChangelogId = 1;
             } else {
                 this.save();
             }
@@ -46,6 +72,10 @@ class JsonDatabase {
         const entry = {
             id,
             ...submission,
+            coupon: submission.coupon != null ? submission.coupon : null,
+            referral: submission.referral != null ? submission.referral : null,
+            priority: submission.priority === true,
+            files: Array.isArray(submission.files) ? submission.files : [],
             status: 'new',
             notes: '',
             messages: [],
@@ -101,6 +131,12 @@ class JsonDatabase {
         }
         if (updates.client_message !== undefined) {
             sub.client_message = updates.client_message;
+        }
+        if (updates.priority !== undefined) {
+            sub.priority = updates.priority;
+        }
+        if (updates.files !== undefined) {
+            sub.files = Array.isArray(updates.files) ? updates.files : (sub.files || []);
         }
 
         sub.updated_at = new Date().toISOString();
@@ -179,6 +215,7 @@ class JsonDatabase {
     }
 
     // ── Page Views ──────────────────────
+    // view may include: url, user_agent, referrer, referral_code, etc.
     addPageView(view) {
         this.data.pageViews.push({
             ...view,
@@ -190,6 +227,225 @@ class JsonDatabase {
         }
 
         this.save();
+    }
+
+    // ── Reviews ─────────────────────────
+    addReview({ name, rating, text, service }) {
+        const id = this.data.nextReviewId++;
+        const entry = {
+            id,
+            name: name || '',
+            rating: rating != null ? rating : 0,
+            text: text || '',
+            service: service || '',
+            approved: false,
+            created_at: new Date().toISOString()
+        };
+        this.data.reviews.unshift(entry);
+        this.save();
+        return entry;
+    }
+
+    getReviews(approvedOnly = true) {
+        let list = [...this.data.reviews];
+        if (approvedOnly) {
+            list = list.filter(r => r.approved === true);
+        }
+        list.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+        return list;
+    }
+
+    approveReview(id) {
+        const index = this.data.reviews.findIndex(r => r.id === parseInt(id));
+        if (index === -1) return null;
+        this.data.reviews[index].approved = true;
+        this.save();
+        return this.data.reviews[index];
+    }
+
+    deleteReview(id) {
+        const index = this.data.reviews.findIndex(r => r.id === parseInt(id));
+        if (index === -1) return false;
+        this.data.reviews.splice(index, 1);
+        this.save();
+        return true;
+    }
+
+    // ── Portfolio ───────────────────────
+    addPortfolio({ title, description, image_url, tags }) {
+        const id = this.data.nextPortfolioId++;
+        const entry = {
+            id,
+            title: title || '',
+            description: description || '',
+            image_url: image_url || '',
+            tags: Array.isArray(tags) ? tags : [],
+            created_at: new Date().toISOString()
+        };
+        this.data.portfolio.unshift(entry);
+        this.save();
+        return entry;
+    }
+
+    getPortfolio() {
+        return [...this.data.portfolio];
+    }
+
+    deletePortfolio(id) {
+        const index = this.data.portfolio.findIndex(p => p.id === parseInt(id));
+        if (index === -1) return false;
+        this.data.portfolio.splice(index, 1);
+        this.save();
+        return true;
+    }
+
+    // ── Coupons ─────────────────────────
+    addCoupon({ code, discount_percent, max_uses }) {
+        const id = this.data.nextCouponId++;
+        const entry = {
+            id,
+            code: (code || '').trim(),
+            discount_percent: discount_percent != null ? discount_percent : 0,
+            max_uses: max_uses != null ? max_uses : 0,
+            uses: 0,
+            active: true,
+            created_at: new Date().toISOString()
+        };
+        this.data.coupons.push(entry);
+        this.save();
+        return entry;
+    }
+
+    getCoupons() {
+        return [...this.data.coupons];
+    }
+
+    validateCoupon(code) {
+        const c = (code || '').trim().toLowerCase();
+        const coupon = this.data.coupons.find(
+            x => (x.code || '').toLowerCase() === c && x.active && (x.uses || 0) < (x.max_uses || 0)
+        );
+        return coupon || null;
+    }
+
+    useCoupon(code) {
+        const coupon = this.validateCoupon(code);
+        if (!coupon) return null;
+        coupon.uses = (coupon.uses || 0) + 1;
+        this.save();
+        return coupon;
+    }
+
+    toggleCoupon(id) {
+        const index = this.data.coupons.findIndex(c => c.id === parseInt(id));
+        if (index === -1) return null;
+        this.data.coupons[index].active = !this.data.coupons[index].active;
+        this.save();
+        return this.data.coupons[index];
+    }
+
+    deleteCoupon(id) {
+        const index = this.data.coupons.findIndex(c => c.id === parseInt(id));
+        if (index === -1) return false;
+        this.data.coupons.splice(index, 1);
+        this.save();
+        return true;
+    }
+
+    // ── Changelog ──────────────────────
+    addChangelog({ title, content, type }) {
+        const id = this.data.nextChangelogId++;
+        const entry = {
+            id,
+            title: title || '',
+            content: content || '',
+            type: type === 'feature' || type === 'improvement' || type === 'fix' ? type : 'improvement',
+            created_at: new Date().toISOString()
+        };
+        this.data.changelog.unshift(entry);
+        this.save();
+        return entry;
+    }
+
+    getChangelog(limit = 50) {
+        const list = [...this.data.changelog];
+        list.sort((a, b) => (b.created_at || '').localeCompare(a.created_at || ''));
+        return list.slice(0, limit);
+    }
+
+    deleteChangelog(id) {
+        const index = this.data.changelog.findIndex(c => c.id === parseInt(id));
+        if (index === -1) return false;
+        this.data.changelog.splice(index, 1);
+        this.save();
+        return true;
+    }
+
+    // ── Analytics ───────────────────────
+    getAnalytics() {
+        const views = this.data.pageViews || [];
+        const now = new Date();
+
+        // Referrer breakdown (top 10) — use referrer or referral_code
+        const referrerCounts = {};
+        views.forEach(v => {
+            const key = (v.referrer || v.referral_code || 'direct').toString().trim() || 'direct';
+            referrerCounts[key] = (referrerCounts[key] || 0) + 1;
+        });
+        const referrerBreakdown = Object.entries(referrerCounts)
+            .map(([referrer, count]) => ({ referrer, count }))
+            .sort((a, b) => b.count - a.count)
+            .slice(0, 10);
+
+        // Browser breakdown from user_agent
+        const browserCounts = { Chrome: 0, Firefox: 0, Safari: 0, Edge: 0, Other: 0 };
+        views.forEach(v => {
+            const ua = (v.user_agent || '').toLowerCase();
+            if (ua.includes('edg/') || ua.includes('edge')) browserCounts.Edge++;
+            else if (ua.includes('chrome') && !ua.includes('edg')) browserCounts.Chrome++;
+            else if (ua.includes('firefox') || ua.includes('fxios')) browserCounts.Firefox++;
+            else if (ua.includes('safari') && !ua.includes('chrome')) browserCounts.Safari++;
+            else browserCounts.Other++;
+        });
+        const browserBreakdown = Object.entries(browserCounts).map(([browser, count]) => ({ browser, count }));
+
+        // Device breakdown (mobile vs desktop)
+        const deviceCounts = { mobile: 0, desktop: 0 };
+        views.forEach(v => {
+            const ua = (v.user_agent || '').toLowerCase();
+            const mobile = /android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(ua);
+            if (mobile) deviceCounts.mobile++;
+            else deviceCounts.desktop++;
+        });
+        const deviceBreakdown = Object.entries(deviceCounts).map(([device, count]) => ({ device, count }));
+
+        // Hourly traffic (24 array, index = hour 0–23)
+        const hourlyTraffic = Array(24).fill(0);
+        views.forEach(v => {
+            const d = v.created_at ? new Date(v.created_at) : null;
+            if (d && !isNaN(d.getTime())) {
+                const h = d.getHours();
+                hourlyTraffic[h]++;
+            }
+        });
+
+        // Views by day (last 30 days)
+        const viewsByDay = [];
+        for (let i = 29; i >= 0; i--) {
+            const d = new Date(now);
+            d.setDate(d.getDate() - i);
+            const dateStr = d.toISOString().split('T')[0];
+            const count = views.filter(v => (v.created_at || '').startsWith(dateStr)).length;
+            viewsByDay.push({ date: dateStr, count });
+        }
+
+        return {
+            referrerBreakdown,
+            browserBreakdown,
+            deviceBreakdown,
+            hourlyTraffic,
+            viewsByDay
+        };
     }
 
     // ── Stats ───────────────────────────
@@ -219,6 +475,11 @@ class JsonDatabase {
             dailySubmissions.push({ date: dateStr, count });
         }
 
+        const totalReviews = (this.data.reviews || []).length;
+        const totalPortfolio = (this.data.portfolio || []).length;
+        const activeCoupons = (this.data.coupons || []).filter(c => c.active).length;
+        const totalChangelog = (this.data.changelog || []).length;
+
         return {
             totalSubmissions: subs.length,
             newSubmissions: subs.filter(s => s.status === 'new').length,
@@ -230,7 +491,11 @@ class JsonDatabase {
             totalViews,
             recentSubmissions: subs.slice(0, 5),
             byService,
-            dailySubmissions
+            dailySubmissions,
+            totalReviews,
+            totalPortfolio,
+            activeCoupons,
+            totalChangelog
         };
     }
 }
