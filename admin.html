@@ -727,18 +727,40 @@
             <!-- Tab: Users (Owner Only) -->
             <div class="tab-content" id="tab-users">
                 <div class="blog-form">
-                    <h4><i class="fas fa-user-plus"></i>&nbsp; Create Admin Account</h4>
-                    <input type="text" id="newAdminUsername" placeholder="Username (3+ characters)">
-                    <input type="password" id="newAdminPassword" placeholder="Password (4+ characters)">
-                    <button class="blog-submit-btn" id="createAdminBtn"><i class="fas fa-plus"></i>&nbsp; Create Admin</button>
+                    <h4><i class="fas fa-user-plus"></i>&nbsp; Create Account</h4>
+                    <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 12px;">
+                        <input type="text" id="newAdminUsername" placeholder="Username (3+ characters)">
+                        <input type="password" id="newAdminPassword" placeholder="Password (4+ characters)">
+                    </div>
+                    <div style="display: flex; gap: 12px; align-items: center; margin-top: 12px;">
+                        <select id="newAdminRole" style="flex:1;padding:10px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:0.88rem;font-family:'Inter',sans-serif;">
+                            <option value="admin">Admin — Full dashboard access</option>
+                            <option value="customizer">Customizer — Manage tickets & chat</option>
+                            <option value="moderator">Moderator — View & moderate</option>
+                            <option value="viewer">Viewer — Read-only access</option>
+                        </select>
+                        <button class="blog-submit-btn" id="createAdminBtn" style="white-space:nowrap;"><i class="fas fa-plus"></i>&nbsp; Create</button>
+                    </div>
                 </div>
-                <div class="toolbar"><h3>Admin & Owner Accounts</h3></div>
-                <div class="table-container">
+                <div class="toolbar" style="justify-content: space-between; flex-wrap: wrap; gap: 12px;">
+                    <h3><i class="fas fa-users-cog" style="color:var(--accent);margin-right:8px;"></i>All Accounts</h3>
+                    <select id="usersRoleFilter" style="padding:8px 14px;background:var(--bg);border:1px solid var(--border);border-radius:8px;color:#fff;font-size:0.82rem;font-family:'Inter',sans-serif;">
+                        <option value="all">All Roles</option>
+                        <option value="owner">Owner</option>
+                        <option value="admin">Admin</option>
+                        <option value="customizer">Customizer</option>
+                        <option value="moderator">Moderator</option>
+                        <option value="viewer">Viewer</option>
+                        <option value="client">Client</option>
+                    </select>
+                </div>
+                <div class="table-container" style="max-height: 600px; overflow-y: auto;">
                     <table>
-                        <thead><tr><th>#</th><th>Username</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead>
+                        <thead><tr><th>#</th><th>Username</th><th>Discord</th><th>Role</th><th>Created</th><th>Actions</th></tr></thead>
                         <tbody id="usersBody"></tbody>
                     </table>
                 </div>
+                <div id="usersSummary" style="padding: 12px 0; text-align: center; color: var(--dim); font-size: 0.82rem;"></div>
             </div>
         </div>
     </div>
@@ -1804,51 +1826,135 @@
         setInterval(() => { if (dashboard.classList.contains('active')) loadDashboard(); }, 30000);
 
         // ── Users Management (Owner) ─────
+        let allUsersData = [];
+
+        const roleConfig = {
+            owner:      { label: 'Owner',      color: '#f59e0b', bg: 'rgba(245,158,11,0.12)', icon: 'fa-crown' },
+            admin:      { label: 'Admin',      color: '#6C63FF', bg: 'rgba(108,99,255,0.12)', icon: 'fa-user-shield' },
+            customizer: { label: 'Customizer', color: '#00D4FF', bg: 'rgba(0,212,255,0.12)',  icon: 'fa-paint-brush' },
+            moderator:  { label: 'Moderator',  color: '#8b5cf6', bg: 'rgba(139,92,246,0.12)', icon: 'fa-gavel' },
+            viewer:     { label: 'Viewer',     color: '#6b7280', bg: 'rgba(107,114,128,0.12)',icon: 'fa-eye' },
+            client:     { label: 'Client',     color: '#10b981', bg: 'rgba(16,185,129,0.12)', icon: 'fa-user' }
+        };
+
+        function roleBadge(role) {
+            const c = roleConfig[role] || roleConfig.viewer;
+            return `<span style="display:inline-flex;align-items:center;gap:5px;padding:4px 12px;border-radius:50px;font-size:0.72rem;font-weight:700;background:${c.bg};color:${c.color};text-transform:uppercase;letter-spacing:0.5px;"><i class="fas ${c.icon}" style="font-size:0.65rem;"></i>${c.label}</span>`;
+        }
+
+        function roleDropdown(userId, currentRole) {
+            if (currentRole === 'owner') return '<span style="color:var(--text-muted);font-size:0.75rem;">Protected</span>';
+            const roles = ['admin', 'customizer', 'moderator', 'viewer', 'client'];
+            const opts = roles.map(r => `<option value="${r}" ${r === currentRole ? 'selected' : ''}>${(roleConfig[r] || {}).label || r}</option>`).join('');
+            return `<select onchange="changeUserRole(${userId}, this.value)" style="padding:5px 10px;background:var(--bg);border:1px solid var(--border);border-radius:6px;color:#fff;font-size:0.78rem;font-family:'Inter',sans-serif;cursor:pointer;">${opts}</select>`;
+        }
+
         async function loadUsers() {
             try {
                 const res = await fetch('/api/admin/users', { headers: apiHeaders() });
                 const data = await res.json();
                 const tbody = document.getElementById('usersBody');
+                const summary = document.getElementById('usersSummary');
                 if (!data.success || !data.users || data.users.length === 0) {
-                    tbody.innerHTML = '<tr><td colspan="5"><div class="empty-state"><i class="fas fa-users"></i><p>No users found.</p></div></td></tr>';
+                    tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-users"></i><p>No users found.</p></div></td></tr>';
+                    summary.textContent = '';
                     return;
                 }
-                tbody.innerHTML = data.users.map(u => `
-                    <tr>
-                        <td style="color:var(--text-muted);">#${u.id}</td>
-                        <td class="td-name">${escapeHtml(u.username)}</td>
-                        <td><span class="status-badge ${u.role === 'owner' ? 'status-completed' : 'status-new'}">${u.role}</span></td>
-                        <td class="td-date">${formatDate(u.created_at)}</td>
-                        <td>${u.role !== 'owner' ? `<div class="action-btns"><button class="action-btn delete" onclick="deleteAdmin(${u.id})" title="Delete"><i class="fas fa-trash"></i></button></div>` : '<span style="color:var(--text-muted);font-size:0.75rem;">Protected</span>'}</td>
-                    </tr>
-                `).join('');
+                allUsersData = data.users;
+                renderUsers();
             } catch { console.error('Failed to load users'); }
         }
+
+        function renderUsers() {
+            const filterRole = document.getElementById('usersRoleFilter').value;
+            let users = [...allUsersData];
+            if (filterRole !== 'all') users = users.filter(u => u.role === filterRole);
+
+            const tbody = document.getElementById('usersBody');
+            const summary = document.getElementById('usersSummary');
+
+            if (users.length === 0) {
+                tbody.innerHTML = '<tr><td colspan="6"><div class="empty-state"><i class="fas fa-users"></i><p>No users with this role.</p></div></td></tr>';
+                summary.textContent = '';
+                return;
+            }
+
+            tbody.innerHTML = users.map(u => `
+                <tr>
+                    <td style="color:var(--text-muted);">#${u.id}</td>
+                    <td class="td-name">${escapeHtml(u.username)}</td>
+                    <td style="font-size:0.82rem;color:var(--dim);">${u.discord ? escapeHtml(u.discord) : '<span style="color:var(--text-muted);">—</span>'}</td>
+                    <td>${roleDropdown(u.id, u.role)}</td>
+                    <td class="td-date">${formatDate(u.created_at)}</td>
+                    <td>${u.role !== 'owner' ? `<div class="action-btns">
+                        <button class="action-btn" onclick="resetUserPassword(${u.id}, '${escapeHtml(u.username)}')" title="Reset Password" style="background:rgba(108,99,255,0.1);border-color:rgba(108,99,255,0.2);color:#6C63FF;"><i class="fas fa-key"></i></button>
+                        <button class="action-btn delete" onclick="deleteUser(${u.id})" title="Delete"><i class="fas fa-trash"></i></button>
+                    </div>` : '<span style="color:var(--text-muted);font-size:0.75rem;">Protected</span>'}</td>
+                </tr>
+            `).join('');
+
+            const counts = {};
+            allUsersData.forEach(u => { counts[u.role] = (counts[u.role] || 0) + 1; });
+            const parts = Object.entries(counts).map(([r, c]) => `<strong>${c}</strong> ${(roleConfig[r] || {}).label || r}`);
+            summary.innerHTML = `Total: <strong>${allUsersData.length}</strong> accounts &middot; ${parts.join(' &middot; ')}`;
+        }
+
+        document.getElementById('usersRoleFilter').addEventListener('change', renderUsers);
 
         document.getElementById('createAdminBtn').addEventListener('click', async () => {
             const username = document.getElementById('newAdminUsername').value.trim();
             const password = document.getElementById('newAdminPassword').value.trim();
+            const role = document.getElementById('newAdminRole').value;
             if (!username || !password) { showToast('Username and password required', 'error'); return; }
             if (username.length < 3 || password.length < 4) { showToast('Username 3+ chars, password 4+ chars', 'error'); return; }
             try {
-                const res = await fetch('/api/admin/users', { method: 'POST', headers: apiHeaders(), body: JSON.stringify({ username, password }) });
+                const res = await fetch('/api/admin/users', { method: 'POST', headers: apiHeaders(), body: JSON.stringify({ username, password, role }) });
                 const data = await res.json();
                 if (data.success) {
-                    showToast('Admin account created!', 'success');
+                    showToast(`${(roleConfig[role] || {}).label || role} account created!`, 'success');
                     document.getElementById('newAdminUsername').value = '';
                     document.getElementById('newAdminPassword').value = '';
                     loadUsers();
                 } else {
                     showToast(data.error || 'Failed to create', 'error');
                 }
-            } catch { showToast('Failed to create admin', 'error'); }
+            } catch { showToast('Failed to create account', 'error'); }
         });
 
-        async function deleteAdmin(id) {
-            if (!confirm('Delete this admin account?')) return;
+        async function changeUserRole(id, newRole) {
+            try {
+                const res = await fetch('/api/admin/users/' + id, { method: 'PATCH', headers: apiHeaders(), body: JSON.stringify({ role: newRole }) });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`Role changed to ${(roleConfig[newRole] || {}).label || newRole}`, 'success');
+                    loadUsers();
+                } else {
+                    showToast(data.error || 'Failed to change role', 'error');
+                    loadUsers(); // revert dropdown
+                }
+            } catch { showToast('Failed to change role', 'error'); loadUsers(); }
+        }
+
+        async function resetUserPassword(id, username) {
+            const newPass = prompt(`Enter new password for "${username}" (4+ characters):`);
+            if (!newPass) return;
+            if (newPass.length < 4) { showToast('Password must be 4+ characters', 'error'); return; }
+            try {
+                const res = await fetch('/api/admin/users/' + id, { method: 'PATCH', headers: apiHeaders(), body: JSON.stringify({ password: newPass }) });
+                const data = await res.json();
+                if (data.success) {
+                    showToast(`Password reset for ${username}`, 'success');
+                } else {
+                    showToast(data.error || 'Failed', 'error');
+                }
+            } catch { showToast('Failed to reset password', 'error'); }
+        }
+
+        async function deleteUser(id) {
+            if (!confirm('Delete this account? This cannot be undone.')) return;
             try {
                 const res = await fetch('/api/admin/users/' + id, { method: 'DELETE', headers: apiHeaders() });
-                if (res.ok) { showToast('Admin deleted', 'success'); loadUsers(); }
+                if (res.ok) { showToast('Account deleted', 'success'); loadUsers(); }
                 else { const d = await res.json(); showToast(d.error || 'Failed', 'error'); }
             } catch { showToast('Failed to delete', 'error'); }
         }

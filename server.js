@@ -83,7 +83,8 @@ function adminAuth(req, res, next) {
     const username = req.headers['x-admin-username'] || req.query.username;
     const password = req.headers['x-admin-password'] || req.query.password;
     const user = db.getUser(username);
-    if (!user || user.password !== password || (user.role !== 'owner' && user.role !== 'admin')) {
+    const staffRoles = ['owner', 'admin', 'customizer', 'moderator', 'viewer'];
+    if (!user || user.password !== password || !staffRoles.includes(user.role)) {
         return res.status(401).json({ success: false, error: 'Unauthorized' });
     }
     req.adminUser = user;
@@ -429,7 +430,8 @@ app.get('/sitemap.xml', (req, res) => {
 app.post('/api/admin/login', loginLimiter, (req, res) => {
     const { username, password } = req.body;
     const user = db.getUser(username);
-    if (user && user.password === password && (user.role === 'owner' || user.role === 'admin')) {
+    const staffRoles = ['owner', 'admin', 'customizer', 'moderator', 'viewer'];
+    if (user && user.password === password && staffRoles.includes(user.role)) {
         res.json({ success: true, role: user.role, userId: user.id });
     } else {
         res.status(401).json({ success: false, error: 'Invalid credentials.' });
@@ -678,8 +680,8 @@ app.get('/api/admin/analytics', adminAuth, (req, res) => {
 // ── User Management (Owner Only) ─────────────
 app.get('/api/admin/users', ownerAuth, (req, res) => {
     try {
-        const users = db.getUsers().filter(u => u.role !== 'client').map(u => ({
-            id: u.id, username: u.username, role: u.role, created_at: u.created_at
+        const users = db.getUsers().map(u => ({
+            id: u.id, username: u.username, role: u.role, discord: u.discord || null, created_at: u.created_at
         }));
         res.json({ success: true, users });
     } catch (err) {
@@ -689,21 +691,47 @@ app.get('/api/admin/users', ownerAuth, (req, res) => {
 
 app.post('/api/admin/users', ownerAuth, (req, res) => {
     try {
-        const { username, password } = req.body;
+        const { username, password, role } = req.body;
         if (!username || !password) {
             return res.status(400).json({ success: false, error: 'Username and password are required.' });
         }
         if (username.length < 3 || password.length < 4) {
             return res.status(400).json({ success: false, error: 'Username must be 3+ chars, password 4+ chars.' });
         }
+        const allowedRoles = ['admin', 'customizer', 'moderator', 'viewer'];
+        const assignRole = allowedRoles.includes(role) ? role : 'admin';
         const existing = db.getUser(username);
         if (existing) {
             return res.status(400).json({ success: false, error: 'Username already taken.' });
         }
-        const user = db.addUser({ username, password, role: 'admin' });
+        const user = db.addUser({ username, password, role: assignRole });
         res.json({ success: true, user: { id: user.id, username: user.username, role: user.role, created_at: user.created_at } });
     } catch (err) {
         res.status(500).json({ success: false, error: 'Failed to create user.' });
+    }
+});
+
+app.patch('/api/admin/users/:id', ownerAuth, (req, res) => {
+    try {
+        const { role, password } = req.body;
+        const user = db.getUserById(req.params.id);
+        if (!user) return res.status(404).json({ success: false, error: 'User not found.' });
+        if (user.role === 'owner') return res.status(400).json({ success: false, error: 'Cannot modify the owner account.' });
+        const allowedRoles = ['admin', 'customizer', 'moderator', 'viewer', 'client'];
+        const updates = {};
+        if (role && allowedRoles.includes(role)) updates.role = role;
+        if (password && password.length >= 4) updates.password = password;
+        // Update role directly since updateUser doesn't handle role
+        if (updates.role) {
+            user.role = updates.role;
+        }
+        if (updates.password) {
+            user.password = updates.password;
+        }
+        db.save();
+        res.json({ success: true, user: { id: user.id, username: user.username, role: user.role } });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to update user.' });
     }
 });
 
