@@ -9,7 +9,7 @@ const path = require('path');
 class JsonDatabase {
     constructor(filepath) {
         this.filepath = filepath;
-        this.data = { submissions: [], pageViews: [], nextId: 1 };
+        this.data = { submissions: [], pageViews: [], blogPosts: [], nextId: 1, nextBlogId: 1 };
         this.load();
     }
 
@@ -18,6 +18,9 @@ class JsonDatabase {
             if (fs.existsSync(this.filepath)) {
                 const raw = fs.readFileSync(this.filepath, 'utf8');
                 this.data = JSON.parse(raw);
+                // Migrate: ensure blogPosts array exists
+                if (!this.data.blogPosts) this.data.blogPosts = [];
+                if (!this.data.nextBlogId) this.data.nextBlogId = 1;
             } else {
                 this.save();
             }
@@ -47,7 +50,7 @@ class JsonDatabase {
             notes: '',
             created_at: new Date().toISOString()
         };
-        this.data.submissions.unshift(entry); // newest first
+        this.data.submissions.unshift(entry);
         this.save();
         return entry;
     }
@@ -72,6 +75,10 @@ class JsonDatabase {
         results = results.slice(offset, offset + limit);
 
         return { submissions: results, total };
+    }
+
+    getAllSubmissions() {
+        return [...this.data.submissions];
     }
 
     getSubmission(id) {
@@ -101,6 +108,33 @@ class JsonDatabase {
         return true;
     }
 
+    // ── Blog Posts ──────────────────────
+    addBlogPost({ title, content, tags }) {
+        const id = this.data.nextBlogId++;
+        const post = {
+            id,
+            title: title.trim(),
+            content: content.trim(),
+            tags: tags || [],
+            created_at: new Date().toISOString()
+        };
+        this.data.blogPosts.unshift(post);
+        this.save();
+        return post;
+    }
+
+    getBlogPosts(limit = 50) {
+        return this.data.blogPosts.slice(0, limit);
+    }
+
+    deleteBlogPost(id) {
+        const index = this.data.blogPosts.findIndex(p => p.id === parseInt(id));
+        if (index === -1) return false;
+        this.data.blogPosts.splice(index, 1);
+        this.save();
+        return true;
+    }
+
     // ── Page Views ──────────────────────
     addPageView(view) {
         this.data.pageViews.push({
@@ -108,7 +142,6 @@ class JsonDatabase {
             created_at: new Date().toISOString()
         });
 
-        // Keep only last 10,000 views to prevent file bloat
         if (this.data.pageViews.length > 10000) {
             this.data.pageViews = this.data.pageViews.slice(-10000);
         }
@@ -127,7 +160,6 @@ class JsonDatabase {
 
         const totalViews = this.data.pageViews.length;
 
-        // Submissions by service
         const serviceCounts = {};
         subs.forEach(s => {
             serviceCounts[s.service] = (serviceCounts[s.service] || 0) + 1;
@@ -135,7 +167,6 @@ class JsonDatabase {
         const byService = Object.entries(serviceCounts).map(([service, count]) => ({ service, count }))
             .sort((a, b) => b.count - a.count);
 
-        // Daily submissions (last 7 days)
         const dailySubmissions = [];
         for (let i = 6; i >= 0; i--) {
             const d = new Date();
