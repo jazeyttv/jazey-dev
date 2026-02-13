@@ -225,7 +225,7 @@
 
         .modal {
             background: var(--bg-card); border: 1px solid var(--border); border-radius: 16px;
-            padding: 32px; width: 100%; max-width: 500px; max-height: 80vh; overflow-y: auto;
+            padding: 32px; width: 100%; max-width: 580px; max-height: 90vh; overflow-y: auto;
         }
 
         .modal h3 { font-family: 'Space Grotesk', sans-serif; margin-bottom: 24px; font-size: 1.2rem; }
@@ -278,6 +278,84 @@
         }
 
         .blog-submit-btn:hover { box-shadow: 0 4px 20px rgba(108,99,255,0.3); transform: translateY(-1px); }
+
+        /* Admin Chat */
+        .modal-chat {
+            margin-top: 4px; margin-bottom: 16px;
+            border: 1px solid var(--border); border-radius: 12px; overflow: hidden;
+        }
+
+        .modal-chat-header {
+            display: flex; align-items: center; justify-content: space-between;
+            padding: 12px 16px; background: rgba(255,255,255,0.02);
+            border-bottom: 1px solid var(--border);
+            font-size: 0.75rem; font-weight: 600; text-transform: uppercase;
+            letter-spacing: 1px; color: var(--text-muted);
+        }
+
+        .modal-chat-header .chat-count {
+            padding: 2px 8px; background: rgba(108,99,255,0.12); color: var(--accent);
+            border-radius: 50px; font-size: 0.65rem; font-weight: 700;
+        }
+
+        .modal-chat-messages {
+            max-height: 250px; overflow-y: auto; padding: 12px 16px;
+            display: flex; flex-direction: column; gap: 8px;
+        }
+
+        .modal-chat-messages::-webkit-scrollbar { width: 3px; }
+        .modal-chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.06); border-radius: 3px; }
+
+        .mchat-empty { text-align: center; padding: 16px; color: var(--text-muted); font-size: 0.82rem; }
+
+        .mchat-bubble {
+            max-width: 85%; padding: 8px 12px; border-radius: 10px;
+            font-size: 0.82rem; line-height: 1.5;
+        }
+
+        .mchat-bubble.client {
+            align-self: flex-start; background: rgba(255,255,255,0.04); border: 1px solid var(--border);
+        }
+
+        .mchat-bubble.admin {
+            align-self: flex-end;
+            background: linear-gradient(135deg, rgba(108,99,255,0.15), rgba(0,212,255,0.1));
+            border: 1px solid rgba(108,99,255,0.15);
+        }
+
+        .mchat-sender {
+            font-size: 0.62rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 0.8px; margin-bottom: 2px;
+        }
+
+        .mchat-bubble.client .mchat-sender { color: var(--yellow); }
+        .mchat-bubble.admin .mchat-sender { color: var(--accent); }
+
+        .mchat-text { color: var(--text); word-break: break-word; }
+
+        .mchat-time { font-size: 0.6rem; color: var(--text-muted); margin-top: 3px; text-align: right; }
+
+        .modal-chat-input {
+            display: flex; gap: 8px; padding: 10px 16px;
+            border-top: 1px solid var(--border);
+        }
+
+        .modal-chat-input input {
+            flex: 1; padding: 8px 12px; background: var(--bg); border: 1px solid var(--border);
+            border-radius: 8px; color: #fff; font-size: 0.85rem; font-family: 'Inter', sans-serif;
+            outline: none;
+        }
+
+        .modal-chat-input input:focus { border-color: var(--accent); }
+
+        .modal-chat-send {
+            padding: 8px 14px; background: var(--gradient); border: none; border-radius: 8px;
+            color: #fff; font-size: 0.8rem; cursor: pointer; transition: 0.3s; font-weight: 600;
+            font-family: 'Inter', sans-serif; white-space: nowrap;
+        }
+
+        .modal-chat-send:hover { box-shadow: 0 4px 16px rgba(108,99,255,0.3); }
+        .modal-chat-send:disabled { opacity: 0.4; cursor: not-allowed; }
 
         /* Empty state */
         .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
@@ -455,6 +533,22 @@
             <div class="modal-field"><label>Service</label><div class="value" id="modalService"></div></div>
             <div class="modal-field"><label>Message</label><div class="value" id="modalMessage" style="white-space: pre-wrap;"></div></div>
             <div class="modal-field"><label>Date</label><div class="value" id="modalDate"></div></div>
+
+            <!-- Chat Section -->
+            <div class="modal-chat" id="modalChat">
+                <div class="modal-chat-header">
+                    <span><i class="fas fa-comments"></i>&nbsp; Live Chat</span>
+                    <span class="chat-count" id="modalChatCount">0</span>
+                </div>
+                <div class="modal-chat-messages" id="modalChatMessages">
+                    <div class="mchat-empty">No messages yet.</div>
+                </div>
+                <div class="modal-chat-input">
+                    <input type="text" id="modalChatInput" placeholder="Reply to client..." autocomplete="off">
+                    <button class="modal-chat-send" id="modalChatSend"><i class="fas fa-reply"></i>&nbsp; Send</button>
+                </div>
+            </div>
+
             <div class="modal-field">
                 <label>Status</label>
                 <select id="modalStatus">
@@ -742,8 +836,86 @@
                 document.getElementById('modalStatus').value = sub.status;
                 document.getElementById('modalClientMsg').value = sub.client_message || '';
                 document.getElementById('modalNotes').value = sub.notes || '';
+
+                // Load chat messages
+                renderAdminChat(sub.messages || [], sub.name);
+
                 document.getElementById('detailModal').classList.add('active');
             } catch { showToast('Failed to load details', 'error'); }
+        }
+
+        function renderAdminChat(messages, clientName) {
+            const container = document.getElementById('modalChatMessages');
+            const countBadge = document.getElementById('modalChatCount');
+            countBadge.textContent = messages.length;
+
+            if (messages.length === 0) {
+                container.innerHTML = '<div class="mchat-empty">No messages yet. The client hasn\'t sent any messages.</div>';
+                return;
+            }
+
+            container.innerHTML = messages.map(m => `
+                <div class="mchat-bubble ${m.sender}">
+                    <div class="mchat-sender">${m.sender === 'admin' ? 'You (Admin)' : escapeHtml(clientName || 'Client')}</div>
+                    <div class="mchat-text">${escapeHtml(m.text)}</div>
+                    <div class="mchat-time">${formatChatTime(m.timestamp)}</div>
+                </div>
+            `).join('');
+
+            // Scroll to bottom
+            setTimeout(() => { container.scrollTop = container.scrollHeight; }, 50);
+        }
+
+        function formatChatTime(dateStr) {
+            const d = new Date(dateStr);
+            const now = new Date();
+            const diff = now - d;
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'Just now';
+            if (mins < 60) return mins + 'm ago';
+            const hours = Math.floor(diff / 3600000);
+            if (hours < 24) return 'Today ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // Admin chat send
+        document.getElementById('modalChatSend').addEventListener('click', sendAdminChat);
+        document.getElementById('modalChatInput').addEventListener('keypress', (e) => {
+            if (e.key === 'Enter') sendAdminChat();
+        });
+
+        async function sendAdminChat() {
+            const input = document.getElementById('modalChatInput');
+            const text = input.value.trim();
+            if (!text || !currentSubmissionId) return;
+
+            const btn = document.getElementById('modalChatSend');
+            btn.disabled = true;
+
+            try {
+                const res = await fetch(`/api/admin/submissions/${currentSubmissionId}/messages`, {
+                    method: 'POST',
+                    headers: apiHeaders(),
+                    body: JSON.stringify({ text })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    input.value = '';
+                    // Re-fetch to get updated messages
+                    const subRes = await fetch(`/api/admin/submissions?limit=200`, { headers: apiHeaders() });
+                    const subData = await subRes.json();
+                    const sub = subData.submissions.find(s => s.id === currentSubmissionId);
+                    if (sub) renderAdminChat(sub.messages || [], sub.name);
+                    showToast('Message sent!', 'success');
+                } else {
+                    showToast(data.error || 'Failed to send', 'error');
+                }
+            } catch {
+                showToast('Failed to send message', 'error');
+            } finally {
+                btn.disabled = false;
+                input.focus();
+            }
         }
 
         document.getElementById('modalCancel').addEventListener('click', () => document.getElementById('detailModal').classList.remove('active'));

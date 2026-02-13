@@ -283,6 +283,111 @@
 
         .activity-empty { padding: 24px; text-align: center; color: var(--muted); font-size: 0.85rem; }
 
+        /* ── Chat Section ────────────── */
+        .chat-card {
+            background: var(--card); border: 1px solid var(--border); border-radius: 20px;
+            overflow: hidden; margin-bottom: 16px; display: none;
+        }
+
+        .chat-card.show { display: block; animation: slideUp 0.5s cubic-bezier(0.16, 1, 0.3, 1) 0.15s both; }
+
+        .chat-header {
+            padding: 20px 24px; border-bottom: 1px solid var(--border);
+            display: flex; align-items: center; justify-content: space-between;
+        }
+
+        .chat-header-left {
+            display: flex; align-items: center; gap: 10px;
+            font-family: 'Space Grotesk', sans-serif; font-size: 0.95rem; font-weight: 700;
+        }
+
+        .chat-header-left i { color: var(--accent); font-size: 0.85rem; }
+
+        .chat-badge {
+            padding: 3px 10px; background: rgba(108,99,255,0.12); border-radius: 50px;
+            font-size: 0.65rem; font-weight: 700; color: var(--accent); letter-spacing: 0.5px;
+        }
+
+        .chat-messages {
+            padding: 20px 24px; max-height: 400px; overflow-y: auto;
+            display: flex; flex-direction: column; gap: 12px;
+            scroll-behavior: smooth;
+        }
+
+        .chat-messages::-webkit-scrollbar { width: 4px; }
+        .chat-messages::-webkit-scrollbar-track { background: transparent; }
+        .chat-messages::-webkit-scrollbar-thumb { background: rgba(255,255,255,0.08); border-radius: 4px; }
+
+        .chat-empty {
+            text-align: center; padding: 32px 16px; color: var(--muted); font-size: 0.85rem;
+        }
+
+        .chat-empty i { font-size: 1.8rem; display: block; margin-bottom: 10px; opacity: 0.3; }
+
+        .chat-bubble {
+            max-width: 80%; padding: 12px 16px; border-radius: 16px;
+            font-size: 0.88rem; line-height: 1.55; position: relative;
+            animation: fadeIn 0.3s ease;
+        }
+
+        .chat-bubble.client {
+            align-self: flex-end;
+            background: linear-gradient(135deg, rgba(108,99,255,0.2), rgba(0,212,255,0.15));
+            border: 1px solid rgba(108,99,255,0.2);
+            border-bottom-right-radius: 4px;
+        }
+
+        .chat-bubble.admin {
+            align-self: flex-start;
+            background: var(--card2);
+            border: 1px solid var(--border2);
+            border-bottom-left-radius: 4px;
+        }
+
+        .chat-bubble-sender {
+            font-size: 0.68rem; font-weight: 700; text-transform: uppercase;
+            letter-spacing: 1px; margin-bottom: 4px;
+        }
+
+        .chat-bubble.client .chat-bubble-sender { color: var(--accent2); }
+        .chat-bubble.admin .chat-bubble-sender { color: var(--accent); }
+
+        .chat-bubble-text { color: var(--text); word-break: break-word; }
+
+        .chat-bubble-time {
+            font-size: 0.65rem; color: var(--muted); margin-top: 6px; text-align: right;
+        }
+
+        .chat-input-area {
+            padding: 16px 24px; border-top: 1px solid var(--border);
+            display: flex; gap: 10px; align-items: flex-end;
+        }
+
+        .chat-input {
+            flex: 1; padding: 12px 16px; background: var(--bg2); border: 1px solid var(--border);
+            border-radius: 14px; color: #fff; font-size: 0.9rem; font-family: 'Inter', sans-serif;
+            outline: none; resize: none; min-height: 44px; max-height: 120px; line-height: 1.4;
+            transition: 0.3s;
+        }
+
+        .chat-input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,0.12); }
+        .chat-input::placeholder { color: var(--muted); }
+
+        .chat-send {
+            width: 44px; height: 44px; display: flex; align-items: center; justify-content: center;
+            background: var(--gradient); border: none; border-radius: 12px;
+            color: #fff; font-size: 1rem; cursor: pointer; transition: 0.3s; flex-shrink: 0;
+        }
+
+        .chat-send:hover { transform: translateY(-2px); box-shadow: 0 6px 20px rgba(108,99,255,0.35); }
+        .chat-send:disabled { opacity: 0.4; cursor: not-allowed; transform: none; box-shadow: none; }
+
+        .chat-typing {
+            padding: 8px 24px; font-size: 0.75rem; color: var(--muted); display: none;
+        }
+
+        .chat-typing.show { display: block; }
+
         /* Auto-refresh badge */
         .refresh-badge {
             text-align: center; margin-top: 16px;
@@ -443,13 +548,28 @@
                         </div>
                     </div>
 
+                    <!-- Live Chat -->
+                    <div class="chat-card" id="chatCard">
+                        <div class="chat-header">
+                            <div class="chat-header-left"><i class="fas fa-comments"></i> Live Chat</div>
+                            <div class="chat-badge" id="chatTicketBadge">TICKET #—</div>
+                        </div>
+                        <div class="chat-messages" id="chatMessages">
+                            <div class="chat-empty"><i class="fas fa-comment-slash"></i>No messages yet. Send a message to start the conversation!</div>
+                        </div>
+                        <div class="chat-input-area">
+                            <textarea class="chat-input" id="chatInput" placeholder="Type a message..." rows="1"></textarea>
+                            <button class="chat-send" id="chatSendBtn" title="Send"><i class="fas fa-paper-plane"></i></button>
+                        </div>
+                    </div>
+
                     <!-- Activity Log -->
                     <div class="activity-card" id="activityCard">
                         <div class="activity-header"><i class="fas fa-stream"></i> Status History</div>
                         <div class="activity-list" id="activityList"></div>
                     </div>
 
-                    <div class="refresh-badge"><i class="fas fa-sync-alt"></i> Auto-refreshes every 30 seconds</div>
+                    <div class="refresh-badge"><i class="fas fa-sync-alt"></i> Auto-refreshes every 15 seconds</div>
                 </div>
             </div>
         </div>
@@ -465,8 +585,15 @@
         const btn = document.getElementById('lookupBtn');
         const errorEl = document.getElementById('errorMsg');
         const resultEl = document.getElementById('result');
+        const chatCard = document.getElementById('chatCard');
+        const chatMessages = document.getElementById('chatMessages');
+        const chatInput = document.getElementById('chatInput');
+        const chatSendBtn = document.getElementById('chatSendBtn');
+        const chatTicketBadge = document.getElementById('chatTicketBadge');
         let currentTicketId = null;
+        let currentTicketName = null;
         let refreshInterval = null;
+        let lastMessageCount = 0;
 
         // Auto-load from URL
         const urlId = new URLSearchParams(window.location.search).get('id');
@@ -483,6 +610,7 @@
             btn.innerHTML = '<i class="fas fa-spinner fa-spin"></i>&nbsp; Loading...';
             errorEl.classList.remove('show');
             resultEl.classList.remove('show');
+            chatCard.classList.remove('show');
 
             try {
                 const res = await fetch('/api/ticket/' + tid);
@@ -491,14 +619,16 @@
                 if (!data.success) { showError(data.error || 'Ticket not found.'); return; }
 
                 currentTicketId = tid;
+                currentTicketName = data.ticket.name;
                 render(data.ticket);
+                renderChat(data.ticket.messages || []);
 
                 // Update URL without reload
                 history.replaceState(null, '', '/ticket?id=' + tid);
 
-                // Start auto-refresh
+                // Start auto-refresh (faster = 15s for chat)
                 if (refreshInterval) clearInterval(refreshInterval);
-                refreshInterval = setInterval(() => silentRefresh(tid), 30000);
+                refreshInterval = setInterval(() => silentRefresh(tid), 15000);
             } catch (err) {
                 showError('Connection error. Please try again.');
             } finally {
@@ -511,10 +641,106 @@
             try {
                 const res = await fetch('/api/ticket/' + id);
                 const data = await res.json();
-                if (data.success) render(data.ticket);
+                if (data.success) {
+                    render(data.ticket);
+                    renderChat(data.ticket.messages || [], true);
+                }
             } catch (e) {}
         }
 
+        // ── Chat ──────────────────────────
+        function renderChat(messages, isRefresh = false) {
+            chatTicketBadge.textContent = 'TICKET #' + currentTicketId;
+            chatCard.classList.add('show');
+
+            if (messages.length === 0) {
+                chatMessages.innerHTML = '<div class="chat-empty"><i class="fas fa-comment-slash"></i>No messages yet. Send a message to start the conversation!</div>';
+                lastMessageCount = 0;
+                return;
+            }
+
+            // Only re-render if message count changed (avoids flicker on refresh)
+            if (isRefresh && messages.length === lastMessageCount) return;
+
+            const shouldAutoScroll = isRefresh
+                ? (chatMessages.scrollTop + chatMessages.clientHeight >= chatMessages.scrollHeight - 60)
+                : true;
+
+            chatMessages.innerHTML = messages.map(m => `
+                <div class="chat-bubble ${m.sender}">
+                    <div class="chat-bubble-sender">${m.sender === 'admin' ? '<i class="fas fa-shield-alt"></i> JAZEY Team' : '<i class="fas fa-user"></i> ' + escapeHtml(currentTicketName || 'You')}</div>
+                    <div class="chat-bubble-text">${escapeHtml(m.text)}</div>
+                    <div class="chat-bubble-time">${formatChatTime(m.timestamp)}</div>
+                </div>
+            `).join('');
+
+            lastMessageCount = messages.length;
+
+            if (shouldAutoScroll) {
+                setTimeout(() => { chatMessages.scrollTop = chatMessages.scrollHeight; }, 50);
+            }
+        }
+
+        // Send message
+        chatSendBtn.addEventListener('click', sendMessage);
+        chatInput.addEventListener('keydown', (e) => {
+            if (e.key === 'Enter' && !e.shiftKey) {
+                e.preventDefault();
+                sendMessage();
+            }
+        });
+
+        // Auto-resize textarea
+        chatInput.addEventListener('input', () => {
+            chatInput.style.height = 'auto';
+            chatInput.style.height = Math.min(chatInput.scrollHeight, 120) + 'px';
+        });
+
+        async function sendMessage() {
+            const text = chatInput.value.trim();
+            if (!text || !currentTicketId) return;
+
+            chatSendBtn.disabled = true;
+            chatInput.disabled = true;
+
+            try {
+                const res = await fetch('/api/ticket/' + currentTicketId + '/messages', {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ text })
+                });
+                const data = await res.json();
+                if (data.success) {
+                    chatInput.value = '';
+                    chatInput.style.height = 'auto';
+                    // Immediately refresh to show the new message
+                    await silentRefresh(currentTicketId);
+                } else {
+                    alert(data.error || 'Failed to send message.');
+                }
+            } catch (err) {
+                alert('Connection error. Please try again.');
+            } finally {
+                chatSendBtn.disabled = false;
+                chatInput.disabled = false;
+                chatInput.focus();
+            }
+        }
+
+        function formatChatTime(dateStr) {
+            const d = new Date(dateStr);
+            const now = new Date();
+            const diff = now - d;
+            const mins = Math.floor(diff / 60000);
+            if (mins < 1) return 'Just now';
+            if (mins < 60) return mins + 'm ago';
+            const hours = Math.floor(diff / 3600000);
+            if (hours < 24) return 'Today ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            if (hours < 48) return 'Yesterday ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+            return d.toLocaleDateString('en-US', { month: 'short', day: 'numeric' }) + ' ' + d.toLocaleTimeString('en-US', { hour: '2-digit', minute: '2-digit' });
+        }
+
+        // ── Render Ticket ─────────────────
         function render(t) {
             // ID + updated
             document.getElementById('rId').textContent = '#' + t.id;
@@ -546,18 +772,11 @@
             }
 
             // Timeline
-            // Map real statuses to visual steps
             const steps = ['new', 'reviewing', 'in-progress', 'testing', 'completed'];
-            const statusMap = {
-                'new': 0,
-                'in-progress': 2,
-                'completed': 4,
-                'cancelled': -1
-            };
+            const statusMap = { 'new': 0, 'in-progress': 2, 'completed': 4, 'cancelled': -1 };
             const currentIdx = statusMap[t.status] !== undefined ? statusMap[t.status] : 0;
             const isCancelled = t.status === 'cancelled';
 
-            // Build timestamp lookup from history
             const historyTimes = {};
             if (t.status_history && t.status_history.length > 0) {
                 t.status_history.forEach(h => {
@@ -588,7 +807,6 @@
                     el.classList.add('active');
                 }
 
-                // Timestamps
                 const timeEl = document.getElementById('time-' + step);
                 if (timeEl) {
                     if (step === 'new') {
@@ -639,7 +857,6 @@
                     `;
                 }).join('');
             } else {
-                // Show at least the creation
                 actCard.classList.add('show');
                 actList.innerHTML = `
                     <div class="activity-item">
@@ -659,6 +876,7 @@
             errorEl.textContent = msg;
             errorEl.classList.add('show');
             resultEl.classList.remove('show');
+            chatCard.classList.remove('show');
         }
 
         function timeAgo(dateStr) {

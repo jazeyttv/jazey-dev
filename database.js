@@ -48,6 +48,7 @@ class JsonDatabase {
             ...submission,
             status: 'new',
             notes: '',
+            messages: [],
             created_at: new Date().toISOString()
         };
         this.data.submissions.unshift(entry);
@@ -116,6 +117,30 @@ class JsonDatabase {
 
         this.save();
         return sub;
+    }
+
+    // ── Messages (Chat) ────────────────
+    addMessage(id, { sender, text }) {
+        const index = this.data.submissions.findIndex(s => s.id === parseInt(id));
+        if (index === -1) return null;
+        const sub = this.data.submissions[index];
+        if (!sub.messages) sub.messages = [];
+        const msg = {
+            id: (sub.messages.length + 1),
+            sender, // 'client' or 'admin'
+            text: text.trim(),
+            timestamp: new Date().toISOString()
+        };
+        sub.messages.push(msg);
+        sub.updated_at = new Date().toISOString();
+        this.save();
+        return msg;
+    }
+
+    getMessages(id) {
+        const sub = this.data.submissions.find(s => s.id === parseInt(id));
+        if (!sub) return null;
+        return sub.messages || [];
     }
 
     deleteSubmission(id) {

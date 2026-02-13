@@ -146,12 +146,74 @@ app.get('/api/ticket/:id', (req, res) => {
                 status: sub.status,
                 client_message: sub.client_message || null,
                 status_history: sub.status_history || [],
+                messages: sub.messages || [],
                 created_at: sub.created_at,
                 updated_at: sub.updated_at || sub.created_at
             }
         });
     } catch (err) {
         res.status(500).json({ success: false, error: 'Failed to look up ticket.' });
+    }
+});
+
+// GET /api/ticket/:id/messages — Public: get chat messages for a ticket
+app.get('/api/ticket/:id/messages', (req, res) => {
+    try {
+        const sub = db.getSubmission(req.params.id);
+        if (!sub) {
+            return res.status(404).json({ success: false, error: 'Ticket not found.' });
+        }
+        const messages = db.getMessages(req.params.id) || [];
+        res.json({ success: true, messages });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to load messages.' });
+    }
+});
+
+// POST /api/ticket/:id/messages — Public: client sends a chat message
+const chatLimiter = rateLimit({
+    windowMs: 60 * 1000,
+    max: 10,
+    message: { success: false, error: 'Too many messages. Slow down a bit.' },
+    standardHeaders: true,
+    legacyHeaders: false
+});
+
+app.post('/api/ticket/:id/messages', chatLimiter, (req, res) => {
+    try {
+        const sub = db.getSubmission(req.params.id);
+        if (!sub) {
+            return res.status(404).json({ success: false, error: 'Ticket not found.' });
+        }
+        const { text } = req.body;
+        if (!text || text.trim().length === 0) {
+            return res.status(400).json({ success: false, error: 'Message cannot be empty.' });
+        }
+        if (text.length > 1000) {
+            return res.status(400).json({ success: false, error: 'Message too long (max 1000 characters).' });
+        }
+        const msg = db.addMessage(req.params.id, { sender: 'client', text });
+        res.json({ success: true, message: msg });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to send message.' });
+    }
+});
+
+// POST /api/admin/submissions/:id/messages — Admin sends a chat message
+app.post('/api/admin/submissions/:id/messages', adminAuth, (req, res) => {
+    try {
+        const sub = db.getSubmission(req.params.id);
+        if (!sub) {
+            return res.status(404).json({ success: false, error: 'Submission not found.' });
+        }
+        const { text } = req.body;
+        if (!text || text.trim().length === 0) {
+            return res.status(400).json({ success: false, error: 'Message cannot be empty.' });
+        }
+        const msg = db.addMessage(req.params.id, { sender: 'admin', text });
+        res.json({ success: true, message: msg });
+    } catch (err) {
+        res.status(500).json({ success: false, error: 'Failed to send message.' });
     }
 });
 
