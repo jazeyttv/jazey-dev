@@ -151,8 +151,12 @@
 
         .pill-new { background: rgba(108,99,255,0.12); color: var(--accent); }
         .pill-new .pulse-dot { background: var(--accent); }
+        .pill-reviewing { background: rgba(245,158,11,0.12); color: var(--yellow); }
+        .pill-reviewing .pulse-dot { background: var(--yellow); }
         .pill-in-progress { background: rgba(0,212,255,0.12); color: var(--accent2); }
         .pill-in-progress .pulse-dot { background: var(--accent2); }
+        .pill-testing { background: rgba(139,92,246,0.12); color: var(--purple); }
+        .pill-testing .pulse-dot { background: var(--purple); }
         .pill-completed { background: rgba(16,185,129,0.12); color: var(--green); }
         .pill-completed .pulse-dot { background: var(--green); }
         .pill-cancelled { background: rgba(239,68,68,0.12); color: var(--red); }
@@ -752,10 +756,12 @@
             const pill = document.getElementById('rPill');
             const pillText = document.getElementById('rPillText');
             const pillConfig = {
-                'new':         { text: 'Received',    cls: 'pill-new' },
-                'in-progress': { text: 'In Progress', cls: 'pill-in-progress' },
-                'completed':   { text: 'Delivered',   cls: 'pill-completed' },
-                'cancelled':   { text: 'Cancelled',   cls: 'pill-cancelled' }
+                'new':         { text: 'Received',      cls: 'pill-new' },
+                'reviewing':   { text: 'Under Review',  cls: 'pill-reviewing' },
+                'in-progress': { text: 'In Development',cls: 'pill-in-progress' },
+                'testing':     { text: 'Testing & QA',  cls: 'pill-testing' },
+                'completed':   { text: 'Delivered',     cls: 'pill-completed' },
+                'cancelled':   { text: 'Cancelled',     cls: 'pill-cancelled' }
             };
             const pc = pillConfig[t.status] || pillConfig['new'];
             pill.className = 'status-pill ' + pc.cls;
@@ -773,7 +779,7 @@
 
             // Timeline
             const steps = ['new', 'reviewing', 'in-progress', 'testing', 'completed'];
-            const statusMap = { 'new': 0, 'in-progress': 2, 'completed': 4, 'cancelled': -1 };
+            const statusMap = { 'new': 0, 'reviewing': 1, 'in-progress': 2, 'testing': 3, 'completed': 4, 'cancelled': -1 };
             const currentIdx = statusMap[t.status] !== undefined ? statusMap[t.status] : 0;
             const isCancelled = t.status === 'cancelled';
 
@@ -781,14 +787,10 @@
             if (t.status_history && t.status_history.length > 0) {
                 t.status_history.forEach(h => {
                     if (h.status === 'new') historyTimes['new'] = h.timestamp;
-                    if (h.status === 'in-progress') {
-                        historyTimes['reviewing'] = historyTimes['reviewing'] || h.timestamp;
-                        historyTimes['in-progress'] = h.timestamp;
-                    }
-                    if (h.status === 'completed') {
-                        historyTimes['testing'] = historyTimes['testing'] || h.timestamp;
-                        historyTimes['completed'] = h.timestamp;
-                    }
+                    if (h.status === 'reviewing') historyTimes['reviewing'] = h.timestamp;
+                    if (h.status === 'in-progress') historyTimes['in-progress'] = h.timestamp;
+                    if (h.status === 'testing') historyTimes['testing'] = h.timestamp;
+                    if (h.status === 'completed') historyTimes['completed'] = h.timestamp;
                     if (h.status === 'cancelled') historyTimes['cancelled'] = h.timestamp;
                 });
             }
@@ -831,13 +833,17 @@
                 actCard.classList.add('show');
                 const statusLabels = {
                     'new': 'Ticket received',
+                    'reviewing': 'Under review',
                     'in-progress': 'Development started',
+                    'testing': 'Testing & QA started',
                     'completed': 'Project delivered',
                     'cancelled': 'Project cancelled'
                 };
                 const dotColors = {
                     'new': 'orange',
+                    'reviewing': 'orange',
                     'in-progress': 'blue',
+                    'testing': 'orange',
                     'completed': 'green',
                     'cancelled': 'red'
                 };

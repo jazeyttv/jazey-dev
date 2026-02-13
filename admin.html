@@ -198,7 +198,9 @@
         }
 
         .status-new { background: rgba(108,99,255,0.15); color: var(--accent); }
+        .status-reviewing { background: rgba(245,158,11,0.15); color: var(--yellow); }
         .status-in-progress { background: rgba(59,130,246,0.15); color: var(--blue); }
+        .status-testing { background: rgba(139,92,246,0.15); color: #8b5cf6; }
         .status-completed { background: rgba(16,185,129,0.15); color: var(--green); }
         .status-cancelled { background: rgba(239,68,68,0.15); color: var(--red); }
 
@@ -434,7 +436,7 @@
             <div class="tab-content active" id="tab-overview">
                 <div class="stats-grid" id="statsGrid">
                     <div class="stat-card">
-                        <div class="stat-card-header"><span>Total Submissions</span><div class="stat-card-icon icon-orange"><i class="fas fa-inbox"></i></div></div>
+                        <div class="stat-card-header"><span>Total</span><div class="stat-card-icon icon-orange"><i class="fas fa-inbox"></i></div></div>
                         <div class="stat-card-value" id="statTotal">—</div>
                     </div>
                     <div class="stat-card">
@@ -442,8 +444,8 @@
                         <div class="stat-card-value" id="statNew">—</div>
                     </div>
                     <div class="stat-card">
-                        <div class="stat-card-header"><span>In Progress</span><div class="stat-card-icon icon-blue"><i class="fas fa-spinner"></i></div></div>
-                        <div class="stat-card-value" id="statInProgress">—</div>
+                        <div class="stat-card-header"><span>Active (Review + Dev + QA)</span><div class="stat-card-icon icon-blue"><i class="fas fa-code"></i></div></div>
+                        <div class="stat-card-value" id="statActive">—</div>
                     </div>
                     <div class="stat-card">
                         <div class="stat-card-header"><span>Page Views Today</span><div class="stat-card-icon icon-green"><i class="fas fa-eye"></i></div></div>
@@ -473,8 +475,10 @@
                         <select id="statusFilter">
                             <option value="all">All Status</option>
                             <option value="new">New</option>
-                            <option value="in-progress">In Progress</option>
-                            <option value="completed">Completed</option>
+                            <option value="reviewing">Under Review</option>
+                            <option value="in-progress">In Development</option>
+                            <option value="testing">Testing & QA</option>
+                            <option value="completed">Delivered</option>
                             <option value="cancelled">Cancelled</option>
                         </select>
                         <button class="export-btn" id="exportBtn"><i class="fas fa-file-csv"></i>&nbsp; Export CSV</button>
@@ -552,8 +556,12 @@
             <div class="modal-field">
                 <label>Status</label>
                 <select id="modalStatus">
-                    <option value="new">New</option><option value="in-progress">In Progress</option>
-                    <option value="completed">Completed</option><option value="cancelled">Cancelled</option>
+                    <option value="new">Received</option>
+                    <option value="reviewing">Under Review</option>
+                    <option value="in-progress">In Development</option>
+                    <option value="testing">Testing & QA</option>
+                    <option value="completed">Delivered</option>
+                    <option value="cancelled">Cancelled</option>
                 </select>
             </div>
             <div class="modal-field"><label>Client Message <span style="color:var(--accent);font-size:0.65rem;font-weight:400;">(visible on ticket tracker)</span></label><textarea id="modalClientMsg" rows="2" placeholder="Update for the client, e.g. 'Working on your heist script — 70% done!'"></textarea></div>
@@ -687,7 +695,7 @@
                     const s = data.stats;
                     document.getElementById('statTotal').textContent = s.totalSubmissions;
                     document.getElementById('statNew').textContent = s.newSubmissions;
-                    document.getElementById('statInProgress').textContent = s.inProgress;
+                    document.getElementById('statActive').textContent = (s.reviewing || 0) + s.inProgress + (s.testing || 0);
                     document.getElementById('statViews').textContent = s.todayViews;
                     renderCharts(s);
                 }
@@ -788,31 +796,44 @@
             }
         }
 
+        const statusLabels = {
+            'new': 'New',
+            'reviewing': 'Reviewing',
+            'in-progress': 'In Dev',
+            'testing': 'Testing',
+            'completed': 'Delivered',
+            'cancelled': 'Cancelled'
+        };
+
         function renderSubmissions(submissions) {
             const tbody = document.getElementById('submissionsBody');
             if (submissions.length === 0) {
                 tbody.innerHTML = `<tr><td colspan="8"><div class="empty-state"><i class="fas fa-inbox"></i><p>No submissions yet.</p></div></td></tr>`;
                 return;
             }
-            tbody.innerHTML = submissions.map(s => `
+            tbody.innerHTML = submissions.map(s => {
+                const msgCount = (s.messages || []).length;
+                const chatIcon = msgCount > 0 ? `<span style="margin-left:6px;font-size:0.65rem;color:var(--accent);" title="${msgCount} chat messages"><i class="fas fa-comments"></i> ${msgCount}</span>` : '';
+                return `
                 <tr>
                     <td style="color: var(--text-muted);">#${s.id}</td>
-                    <td class="td-name">${escapeHtml(s.name)}</td>
+                    <td class="td-name">${escapeHtml(s.name)}${chatIcon}</td>
                     <td class="td-discord">${escapeHtml(s.discord)}</td>
                     <td>${serviceNames[s.service] || s.service}</td>
                     <td class="td-message" title="${escapeHtml(s.message)}">${escapeHtml(s.message)}</td>
-                    <td><span class="status-badge status-${s.status}" onclick="cycleStatus(${s.id}, '${s.status}')">${s.status.replace('-', ' ')}</span></td>
+                    <td><span class="status-badge status-${s.status}" onclick="cycleStatus(${s.id}, '${s.status}')">${statusLabels[s.status] || s.status}</span></td>
                     <td class="td-date">${formatDate(s.created_at)}</td>
                     <td><div class="action-btns">
                         <button class="action-btn" onclick="openDetail(${s.id})" title="View"><i class="fas fa-eye"></i></button>
                         <button class="action-btn delete" onclick="deleteSubmission(${s.id})" title="Delete"><i class="fas fa-trash"></i></button>
                     </div></td>
                 </tr>
-            `).join('');
+                `;
+            }).join('');
         }
 
         async function cycleStatus(id, current) {
-            const order = ['new', 'in-progress', 'completed', 'cancelled'];
+            const order = ['new', 'reviewing', 'in-progress', 'testing', 'completed', 'cancelled'];
             const next = order[(order.indexOf(current) + 1) % order.length];
             try {
                 const res = await fetch(`/api/admin/submissions/${id}`, { method: 'PATCH', headers: apiHeaders(), body: JSON.stringify({ status: next }) });

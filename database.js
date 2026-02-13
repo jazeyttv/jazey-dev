@@ -222,7 +222,9 @@ class JsonDatabase {
         return {
             totalSubmissions: subs.length,
             newSubmissions: subs.filter(s => s.status === 'new').length,
+            reviewing: subs.filter(s => s.status === 'reviewing').length,
             inProgress: subs.filter(s => s.status === 'in-progress').length,
+            testing: subs.filter(s => s.status === 'testing').length,
             completed: subs.filter(s => s.status === 'completed').length,
             todayViews,
             totalViews,
