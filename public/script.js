@@ -94,7 +94,7 @@
                 if (p.y < 0 || p.y > canvas.height) p.vy *= -1;
                 ctx.beginPath();
                 ctx.arc(p.x, p.y, p.radius, 0, Math.PI * 2);
-                ctx.fillStyle = `rgba(255, 107, 53, ${p.alpha})`;
+                ctx.fillStyle = `rgba(108, 99, 255, ${p.alpha})`;
                 ctx.fill();
             });
 
@@ -108,7 +108,7 @@
                         ctx.beginPath();
                         ctx.moveTo(particles[i].x, particles[i].y);
                         ctx.lineTo(particles[j].x, particles[j].y);
-                        ctx.strokeStyle = `rgba(255, 107, 53, ${0.06 * (1 - dist / 120)})`;
+                        ctx.strokeStyle = `rgba(108, 99, 255, ${0.06 * (1 - dist / 120)})`;
                         ctx.stroke();
                     }
                 }
@@ -136,11 +136,11 @@
             dot.classList.add('trail-dot');
             const size = Math.max(3, 14 - i * 1.2);
             const opacity = Math.max(0.1, 0.7 - i * 0.07);
-            const hue = Math.round(20 + i * 4); // orange to red
+            const hue = Math.round(250 - i * 5); // purple to cyan
             dot.style.width = size + 'px';
             dot.style.height = size + 'px';
-            dot.style.background = `radial-gradient(circle, hsla(${hue}, 100%, 55%, ${opacity}), hsla(${hue - 10}, 100%, 40%, ${opacity * 0.4}))`;
-            dot.style.boxShadow = `0 0 ${size}px hsla(${hue}, 100%, 55%, ${opacity * 0.5})`;
+            dot.style.background = `radial-gradient(circle, hsla(${hue}, 80%, 65%, ${opacity}), hsla(${hue + 10}, 90%, 50%, ${opacity * 0.4}))`;
+            dot.style.boxShadow = `0 0 ${size}px hsla(${hue}, 80%, 65%, ${opacity * 0.5})`;
             document.body.appendChild(dot);
             trailDots.push(dot);
             positions.push({ x: -100, y: -100 });
@@ -435,7 +435,7 @@
                         banner.style.cssText = 'background:rgba(16,185,129,0.1);border:1px solid rgba(16,185,129,0.3);border-radius:12px;padding:16px 20px;margin-bottom:20px;text-align:center;animation:fadeInUp 0.5s ease;';
                         contactForm.parentElement.insertBefore(banner, contactForm);
                     }
-                    banner.innerHTML = `<p style="color:#10b981;font-weight:600;margin-bottom:4px;">Your ticket number is <strong>#${ticketId}</strong></p><p style="color:var(--text-secondary);font-size:0.85rem;">Save this number! <a href="/ticket?id=${ticketId}" style="color:#FF6B35;text-decoration:underline;">Track your ticket here</a></p>`;
+                    banner.innerHTML = `<p style="color:#10b981;font-weight:600;margin-bottom:4px;">Your ticket number is <strong>#${ticketId}</strong></p><p style="color:var(--text-secondary);font-size:0.85rem;">Save this number! <a href="/ticket?id=${ticketId}" style="color:#6C63FF;text-decoration:underline;">Track your ticket here</a></p>`;
 
                     setTimeout(() => {
                         btn.innerHTML = originalContent;

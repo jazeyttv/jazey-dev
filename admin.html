@@ -18,9 +18,9 @@
             --text: #ffffff;
             --text-secondary: #9090aa;
             --text-muted: #5e5e72;
-            --accent: #FF6B35;
-            --accent2: #FF3366;
-            --gradient: linear-gradient(135deg, #FF6B35, #FF3366);
+            --accent: #6C63FF;
+            --accent2: #00D4FF;
+            --gradient: linear-gradient(135deg, #6C63FF, #00D4FF);
             --green: #10b981;
             --yellow: #f59e0b;
             --blue: #3b82f6;
@@ -47,14 +47,14 @@
             outline: none; margin-bottom: 16px; transition: 0.3s;
         }
 
-        .login-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(255,107,53,0.1); }
+        .login-box input:focus { border-color: var(--accent); box-shadow: 0 0 0 3px rgba(108,99,255,0.1); }
 
         .login-btn {
             width: 100%; padding: 14px; background: var(--gradient); border: none; border-radius: 10px;
             color: #fff; font-weight: 600; font-size: 0.95rem; cursor: pointer; transition: 0.3s; font-family: 'Inter', sans-serif;
         }
 
-        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(255,107,53,0.3); }
+        .login-btn:hover { transform: translateY(-2px); box-shadow: 0 8px 30px rgba(108,99,255,0.3); }
         .login-error { color: var(--red); font-size: 0.85rem; margin-top: 12px; display: none; }
 
         /* Dashboard Layout */
@@ -122,7 +122,7 @@
         .stat-card-icon { width: 36px; height: 36px; display: flex; align-items: center; justify-content: center; border-radius: 8px; font-size: 0.9rem; }
         .stat-card-value { font-family: 'Space Grotesk', sans-serif; font-size: 2rem; font-weight: 700; }
 
-        .icon-orange { background: rgba(255,107,53,0.1); color: var(--accent); }
+        .icon-orange { background: rgba(108,99,255,0.1); color: var(--accent); }
         .icon-green { background: rgba(16,185,129,0.1); color: var(--green); }
         .icon-blue { background: rgba(59,130,246,0.1); color: var(--blue); }
         .icon-yellow { background: rgba(245,158,11,0.1); color: var(--yellow); }
@@ -160,12 +160,12 @@
         .toolbar select option { background: var(--bg-card); }
 
         .refresh-btn, .export-btn {
-            padding: 10px 16px; border: 1px solid rgba(255,107,53,0.2);
+            padding: 10px 16px; border: 1px solid rgba(108,99,255,0.2);
             border-radius: 8px; cursor: pointer; transition: 0.3s; font-size: 0.85rem; font-family: 'Inter', sans-serif;
         }
 
-        .refresh-btn { background: rgba(255,107,53,0.1); color: var(--accent); }
-        .refresh-btn:hover { background: rgba(255,107,53,0.2); }
+        .refresh-btn { background: rgba(108,99,255,0.1); color: var(--accent); }
+        .refresh-btn:hover { background: rgba(108,99,255,0.2); }
 
         .export-btn { background: rgba(16,185,129,0.1); color: var(--green); border-color: rgba(16,185,129,0.2); }
         .export-btn:hover { background: rgba(16,185,129,0.2); }
@@ -197,7 +197,7 @@
             letter-spacing: 0.5px; cursor: pointer; transition: 0.3s;
         }
 
-        .status-new { background: rgba(255,107,53,0.15); color: var(--accent); }
+        .status-new { background: rgba(108,99,255,0.15); color: var(--accent); }
         .status-in-progress { background: rgba(59,130,246,0.15); color: var(--blue); }
         .status-completed { background: rgba(16,185,129,0.15); color: var(--green); }
         .status-cancelled { background: rgba(239,68,68,0.15); color: var(--red); }
@@ -249,7 +249,7 @@
         }
 
         .modal-btn-save { background: var(--gradient); color: #fff; }
-        .modal-btn-save:hover { box-shadow: 0 4px 20px rgba(255,107,53,0.3); }
+        .modal-btn-save:hover { box-shadow: 0 4px 20px rgba(108,99,255,0.3); }
         .modal-btn-cancel { background: rgba(255,255,255,0.05); color: var(--text-secondary); border: 1px solid var(--border); }
         .modal-btn-cancel:hover { background: rgba(255,255,255,0.08); }
 
@@ -277,7 +277,7 @@
             font-family: 'Inter', sans-serif;
         }
 
-        .blog-submit-btn:hover { box-shadow: 0 4px 20px rgba(255,107,53,0.3); transform: translateY(-1px); }
+        .blog-submit-btn:hover { box-shadow: 0 4px 20px rgba(108,99,255,0.3); transform: translateY(-1px); }
 
         /* Empty state */
         .empty-state { text-align: center; padding: 60px 20px; color: var(--text-muted); }
@@ -621,8 +621,8 @@
                     datasets: [{
                         label: 'Submissions',
                         data: values,
-                        backgroundColor: 'rgba(255, 107, 53, 0.6)',
-                        borderColor: '#FF6B35',
+                        backgroundColor: 'rgba(108, 99, 255, 0.6)',
+                        borderColor: '#6C63FF',
                         borderWidth: 1,
                         borderRadius: 6,
                         barPercentage: 0.6
@@ -651,7 +651,7 @@
 
             const serviceLabels = (stats.byService || []).map(s => serviceNames[s.service] || s.service);
             const serviceValues = (stats.byService || []).map(s => s.count);
-            const serviceColors = ['#FF6B35', '#FF3366', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
+            const serviceColors = ['#6C63FF', '#00D4FF', '#3b82f6', '#10b981', '#f59e0b', '#8b5cf6'];
 
             serviceChartInstance = new Chart(serviceCtx, {
                 type: 'doughnut',

@@ -308,7 +308,7 @@ async function sendDiscordWebhook(data, id) {
         avatar_url: 'https://i.imgur.com/AfFp7pu.png',
         embeds: [{
             title: 'New Project Inquiry!',
-            color: 0xFF6B35,
+            color: 0x6C63FF,
             fields: [
                 { name: 'Name', value: data.name, inline: true },
                 { name: 'Discord', value: data.discord, inline: true },
@@ -340,7 +340,7 @@ async function sendEmailNotification(data, id) {
             subject: `New Inquiry #${id} — ${data.name} (${serviceName})`,
             html: `
                 <div style="font-family:Arial,sans-serif;max-width:500px;margin:0 auto;padding:24px;background:#111;color:#fff;border-radius:12px;">
-                    <h2 style="color:#FF6B35;margin-bottom:16px;">New Project Inquiry #${id}</h2>
+                    <h2 style="color:#6C63FF;margin-bottom:16px;">New Project Inquiry #${id}</h2>
                     <p><strong>Name:</strong> ${data.name}</p>
                     <p><strong>Discord:</strong> ${data.discord}</p>
                     <p><strong>Service:</strong> ${serviceName}</p>

@@ -18,12 +18,12 @@
     --text-primary: #ffffff;
     --text-secondary: #a0a0b8;
     --text-muted: #5e5e78;
-    --accent-1: #FF6B35;
-    --accent-2: #FF3366;
-    --accent-gradient: linear-gradient(135deg, #FF6B35 0%, #FF3366 100%);
+    --accent-1: #6C63FF;
+    --accent-2: #00D4FF;
+    --accent-gradient: linear-gradient(135deg, #6C63FF 0%, #00D4FF 100%);
     --border-color: rgba(255, 255, 255, 0.06);
     --border-hover: rgba(255, 255, 255, 0.12);
-    --glow-color: rgba(255, 107, 53, 0.15);
+    --glow-color: rgba(108, 99, 255, 0.15);
     --radius-sm: 8px;
     --radius-md: 12px;
     --radius-lg: 20px;
@@ -43,7 +43,7 @@
     --text-muted: #8888a0;
     --border-color: rgba(0, 0, 0, 0.08);
     --border-hover: rgba(0, 0, 0, 0.15);
-    --glow-color: rgba(255, 107, 53, 0.08);
+    --glow-color: rgba(108, 99, 255, 0.08);
 }
 
 html {
@@ -62,7 +62,7 @@ body {
 }
 
 ::selection {
-    background: rgba(255, 107, 53, 0.3);
+    background: rgba(108, 99, 255, 0.3);
     color: #fff;
 }
 
@@ -173,12 +173,12 @@ body {
 .btn-primary {
     background: var(--accent-gradient);
     color: #fff;
-    box-shadow: 0 4px 25px rgba(255, 107, 53, 0.3);
+    box-shadow: 0 4px 25px rgba(108, 99, 255, 0.3);
 }
 
 .btn-primary:hover {
     transform: translateY(-2px);
-    box-shadow: 0 8px 40px rgba(255, 107, 53, 0.5);
+    box-shadow: 0 8px 40px rgba(108, 99, 255, 0.5);
 }
 
 .btn-primary i { transition: transform 0.3s; }
@@ -296,7 +296,7 @@ body {
 }
 
 .nav-link-cta:hover {
-    box-shadow: 0 4px 20px rgba(255, 107, 53, 0.4);
+    box-shadow: 0 4px 20px rgba(108, 99, 255, 0.4);
     transform: translateY(-1px);
 }
 
@@ -319,7 +319,7 @@ body {
 .theme-toggle:hover {
     color: var(--accent-1);
     border-color: var(--accent-1);
-    background: rgba(255, 107, 53, 0.1);
+    background: rgba(108, 99, 255, 0.1);
 }
 
 /* Mobile Nav Toggle */
@@ -364,14 +364,14 @@ body {
 
 .hero-orb-1 {
     width: 600px; height: 600px;
-    background: radial-gradient(circle, rgba(255, 107, 53, 0.3), transparent 70%);
+    background: radial-gradient(circle, rgba(108, 99, 255, 0.3), transparent 70%);
     top: -200px; right: -100px;
     animation: float 8s ease-in-out infinite;
 }
 
 .hero-orb-2 {
     width: 500px; height: 500px;
-    background: radial-gradient(circle, rgba(255, 51, 102, 0.2), transparent 70%);
+    background: radial-gradient(circle, rgba(0, 212, 255, 0.2), transparent 70%);
     bottom: -150px; left: -100px;
     animation: float 10s ease-in-out infinite reverse;
 }
@@ -397,8 +397,8 @@ body {
 .hero-badge {
     display: inline-flex; align-items: center; gap: 8px;
     padding: 8px 20px;
-    background: rgba(255, 107, 53, 0.08);
-    border: 1px solid rgba(255, 107, 53, 0.2);
+    background: rgba(108, 99, 255, 0.08);
+    border: 1px solid rgba(108, 99, 255, 0.2);
     border-radius: 50px;
     font-size: 0.85rem; color: var(--accent-1); font-weight: 500;
     margin-bottom: 32px;
@@ -519,8 +519,8 @@ body {
     font-size: 0.8rem; font-weight: 600; letter-spacing: 3px;
     text-transform: uppercase; color: var(--accent-1);
     margin-bottom: 16px; padding: 6px 16px;
-    background: rgba(255, 107, 53, 0.08);
-    border: 1px solid rgba(255, 107, 53, 0.15);
+    background: rgba(108, 99, 255, 0.08);
+    border: 1px solid rgba(108, 99, 255, 0.15);
     border-radius: 50px;
 }
 
@@ -565,7 +565,7 @@ body {
 .service-icon {
     width: 52px; height: 52px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(255, 107, 53, 0.1);
+    background: rgba(108, 99, 255, 0.1);
     border-radius: var(--radius-md); margin-bottom: 20px;
     font-size: 1.2rem; color: var(--accent-1); transition: var(--transition);
 }
@@ -732,7 +732,7 @@ body {
 
 .pricing-featured {
     border-color: var(--accent-1);
-    box-shadow: 0 0 40px rgba(255, 107, 53, 0.1);
+    box-shadow: 0 0 40px rgba(108, 99, 255, 0.1);
 }
 
 .pricing-featured::before {
@@ -797,7 +797,7 @@ body {
 .feature-icon {
     width: 28px; height: 28px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(255, 107, 53, 0.1);
+    background: rgba(108, 99, 255, 0.1);
     border-radius: 50%; font-size: 0.7rem; color: var(--accent-1); flex-shrink: 0;
 }
 
@@ -882,8 +882,8 @@ body {
 
 .blog-card-tags span {
     padding: 3px 10px;
-    background: rgba(255, 107, 53, 0.08);
-    border: 1px solid rgba(255, 107, 53, 0.15);
+    background: rgba(108, 99, 255, 0.08);
+    border: 1px solid rgba(108, 99, 255, 0.15);
     border-radius: 50px;
     font-size: 0.72rem; font-weight: 500; color: var(--accent-1);
 }
@@ -949,7 +949,7 @@ body {
 
 .faq-item:hover { border-color: var(--border-hover); }
 
-.faq-item.active { border-color: rgba(255, 107, 53, 0.3); }
+.faq-item.active { border-color: rgba(108, 99, 255, 0.3); }
 
 .faq-question {
     width: 100%; padding: 20px 24px;
@@ -1000,8 +1000,8 @@ body {
 .cta-bg-effects { position: absolute; inset: 0; overflow: hidden; }
 
 .cta-orb { position: absolute; border-radius: 50%; filter: blur(80px); }
-.cta-orb-1 { width: 300px; height: 300px; background: rgba(255, 107, 53, 0.15); top: -100px; right: -50px; }
-.cta-orb-2 { width: 250px; height: 250px; background: rgba(255, 51, 102, 0.1); bottom: -80px; left: -30px; }
+.cta-orb-1 { width: 300px; height: 300px; background: rgba(108, 99, 255, 0.15); top: -100px; right: -50px; }
+.cta-orb-2 { width: 250px; height: 250px; background: rgba(0, 212, 255, 0.1); bottom: -80px; left: -30px; }
 
 .cta-box h2 {
     position: relative; font-family: 'Space Grotesk', sans-serif;
@@ -1035,7 +1035,7 @@ body {
 .contact-method-icon {
     width: 44px; height: 44px;
     display: flex; align-items: center; justify-content: center;
-    background: rgba(255, 107, 53, 0.1);
+    background: rgba(108, 99, 255, 0.1);
     border-radius: var(--radius-sm);
     font-size: 1.1rem; color: var(--accent-1);
 }
@@ -1065,7 +1065,7 @@ body {
 .form-group textarea:focus,
 .form-group select:focus {
     border-color: var(--accent-1);
-    box-shadow: 0 0 0 3px rgba(255, 107, 53, 0.1);
+    box-shadow: 0 0 0 3px rgba(108, 99, 255, 0.1);
 }
 
 .form-group label {
