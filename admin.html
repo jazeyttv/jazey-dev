@@ -642,7 +642,8 @@
                 <div class="stats-grid" id="analyticsStats">
                     <div class="stat-card"><div class="stat-card-header"><span>Total Views</span><div class="stat-card-icon icon-orange"><i class="fas fa-eye"></i></div></div><div class="stat-card-value" id="analyticsTotalViews">—</div></div>
                     <div class="stat-card"><div class="stat-card-header"><span>Today Views</span><div class="stat-card-icon icon-green"><i class="fas fa-chart-line"></i></div></div><div class="stat-card-value" id="analyticsTodayViews">—</div></div>
-                    <div class="stat-card"><div class="stat-card-header"><span>Unique Referrers</span><div class="stat-card-icon icon-blue"><i class="fas fa-external-link-alt"></i></div></div><div class="stat-card-value" id="analyticsReferrers">—</div></div>
+                    <div class="stat-card"><div class="stat-card-header"><span>Unique IPs Today</span><div class="stat-card-icon icon-blue"><i class="fas fa-fingerprint"></i></div></div><div class="stat-card-value" id="analyticsUniqueToday">—</div></div>
+                    <div class="stat-card"><div class="stat-card-header"><span>Total Unique IPs</span><div class="stat-card-icon" style="background:rgba(139,92,246,0.1);color:#8b5cf6;"><i class="fas fa-globe"></i></div></div><div class="stat-card-value" id="analyticsUniqueTotal">—</div></div>
                 </div>
                 <div class="charts-grid" style="grid-template-columns: 1fr 1fr;">
                     <div class="chart-card"><h4>Views by Day (Last 30 Days)</h4><canvas id="analyticsLineChart" height="120"></canvas></div>
@@ -652,9 +653,36 @@
                     <div class="chart-card"><h4>Hourly Traffic</h4><canvas id="analyticsBarChart" height="120"></canvas></div>
                     <div class="chart-card"><h4>Top Referrers</h4><canvas id="analyticsRefChart" height="120"></canvas></div>
                 </div>
+                <div class="charts-grid" style="grid-template-columns: 1fr 1fr; margin-top: 20px;">
+                    <div class="chart-card">
+                        <h4>Device Split</h4>
+                        <div id="analyticsDeviceSplit" style="display: flex; flex-direction: column; gap: 12px;"></div>
+                    </div>
+                    <div class="chart-card">
+                        <h4>Unique Visitors</h4>
+                        <div id="analyticsUniqueIps" style="display: flex; flex-direction: column; gap: 12px;"></div>
+                    </div>
+                </div>
+
+                <!-- Live Visitors Table -->
                 <div class="chart-card" style="margin-top: 20px;">
-                    <h4>Device Split</h4>
-                    <div id="analyticsDeviceSplit" style="display: flex; flex-direction: column; gap: 12px;"></div>
+                    <h4 style="margin-bottom: 16px;"><i class="fas fa-users" style="color: var(--accent); margin-right: 8px;"></i>Recent Visitors</h4>
+                    <div class="table-container" style="max-height: 500px; overflow-y: auto;">
+                        <table>
+                            <thead>
+                                <tr>
+                                    <th>IP Address</th>
+                                    <th>Device</th>
+                                    <th>Browser</th>
+                                    <th>OS</th>
+                                    <th>Page</th>
+                                    <th>Referrer</th>
+                                    <th>Time</th>
+                                </tr>
+                            </thead>
+                            <tbody id="visitorsBody"></tbody>
+                        </table>
+                    </div>
                 </div>
             </div>
 
@@ -1512,7 +1540,8 @@
                 const a = data.analytics || data;
                 document.getElementById('analyticsTotalViews').textContent = (a.totalViews != null ? a.totalViews : a.total_views) || '0';
                 document.getElementById('analyticsTodayViews').textContent = (a.todayViews != null ? a.todayViews : a.today_views) || '0';
-                document.getElementById('analyticsReferrers').textContent = (a.uniqueReferrers != null ? a.uniqueReferrers : a.unique_referrers) || '0';
+                document.getElementById('analyticsUniqueToday').textContent = a.uniqueIpsToday || '0';
+                document.getElementById('analyticsUniqueTotal').textContent = a.totalUniqueIps || '0';
 
                 const viewsByDay = a.viewsByDay || a.views_by_day || [];
                 const lineCtx = document.getElementById('analyticsLineChart');
@@ -1526,7 +1555,7 @@
                     options: { responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#5e5e72' }, grid: { color: 'rgba(255,255,255,0.04)' } }, x: { ticks: { color: '#5e5e72', maxTicksLimit: 12 }, grid: { display: false } } } }
                 });
 
-                const browsers = a.browsers || a.browser_breakdown || [];
+                const browsers = a.browsers || a.browserBreakdown || a.browser_breakdown || [];
                 const doughnutCtx = document.getElementById('analyticsDoughnutChart');
                 if (analyticsDoughnutChart) analyticsDoughnutChart.destroy();
                 analyticsDoughnutChart = new Chart(doughnutCtx, {
@@ -1538,7 +1567,11 @@
                     options: { responsive: true, cutout: '60%', plugins: { legend: { position: 'bottom', labels: { color: '#9090aa', font: { size: 11 } } } } }
                 });
 
-                const hourly = a.hourly || a.hourly_traffic || [];
+                const hourlyRaw = a.hourly || a.hourlyTraffic || a.hourly_traffic || [];
+                // Handle both array-of-numbers (index=hour) and array-of-objects ({hour, count})
+                const hourly = Array.isArray(hourlyRaw) && typeof hourlyRaw[0] === 'number'
+                    ? hourlyRaw.map((count, i) => ({ hour: i, count }))
+                    : hourlyRaw;
                 const barCtx = document.getElementById('analyticsBarChart');
                 if (analyticsBarChart) analyticsBarChart.destroy();
                 analyticsBarChart = new Chart(barCtx, {
@@ -1550,7 +1583,7 @@
                     options: { indexAxis: 'x', responsive: true, plugins: { legend: { display: false } }, scales: { y: { beginAtZero: true, ticks: { color: '#5e5e72' }, grid: { color: 'rgba(255,255,255,0.04)' } }, x: { ticks: { color: '#5e5e72', maxTicksLimit: 12 }, grid: { display: false } } } }
                 });
 
-                const referrers = a.topReferrers || a.top_referrers || [];
+                const referrers = a.topReferrers || a.referrerBreakdown || a.top_referrers || [];
                 const refCtx = document.getElementById('analyticsRefChart');
                 if (analyticsRefChart) analyticsRefChart.destroy();
                 analyticsRefChart = new Chart(refCtx, {
@@ -1562,7 +1595,7 @@
                     options: { indexAxis: 'y', responsive: true, plugins: { legend: { display: false } }, scales: { x: { beginAtZero: true, ticks: { color: '#5e5e72' }, grid: { color: 'rgba(255,255,255,0.04)' } }, y: { ticks: { color: '#5e5e72', font: { size: 10 } }, grid: { display: false } } } }
                 });
 
-                const deviceSplit = a.deviceSplit || a.device_split || { mobile: 0, desktop: 0 };
+                const deviceSplit = a.deviceSplit || a.device_split || (a.deviceBreakdown ? Object.fromEntries((a.deviceBreakdown || []).map(d => [d.device, d.count])) : { mobile: 0, desktop: 0 });
                 const mobile = deviceSplit.mobile || 0;
                 const desktop = deviceSplit.desktop || 0;
                 const total = mobile + desktop || 1;
@@ -1571,6 +1604,48 @@
                     <div><div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Mobile</span><span>${Math.round(100 * mobile / total)}%</span></div><div style="height: 12px; background: var(--bg); border-radius: 50px; overflow: hidden;"><div style="height: 100%; width: ${100 * mobile / total}%; background: var(--accent); border-radius: 50px;"></div></div></div>
                     <div><div style="display: flex; justify-content: space-between; margin-bottom: 4px;"><span>Desktop</span><span>${Math.round(100 * desktop / total)}%</span></div><div style="height: 12px; background: var(--bg); border-radius: 50px; overflow: hidden;"><div style="height: 100%; width: ${100 * desktop / total}%; background: var(--green); border-radius: 50px;"></div></div></div>
                 `;
+
+                // Unique IPs
+                const uniqueContainer = document.getElementById('analyticsUniqueIps');
+                const uToday = a.uniqueIpsToday || 0;
+                const uTotal = a.totalUniqueIps || 0;
+                uniqueContainer.innerHTML = `
+                    <div style="display: flex; align-items: center; gap: 16px; padding: 12px 0; border-bottom: 1px solid var(--border);">
+                        <div style="width: 44px; height: 44px; background: rgba(108,99,255,0.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent); font-size: 1.1rem;"><i class="fas fa-user-clock"></i></div>
+                        <div><div style="font-size: 1.3rem; font-weight: 800; font-family: 'Space Grotesk', sans-serif;">${uToday}</div><div style="font-size: 0.75rem; color: var(--dim);">Unique IPs Today</div></div>
+                    </div>
+                    <div style="display: flex; align-items: center; gap: 16px; padding: 12px 0;">
+                        <div style="width: 44px; height: 44px; background: rgba(0,212,255,0.12); border-radius: 12px; display: flex; align-items: center; justify-content: center; color: var(--accent2); font-size: 1.1rem;"><i class="fas fa-globe"></i></div>
+                        <div><div style="font-size: 1.3rem; font-weight: 800; font-family: 'Space Grotesk', sans-serif;">${uTotal}</div><div style="font-size: 0.75rem; color: var(--dim);">Total Unique IPs</div></div>
+                    </div>
+                `;
+
+                // Recent Visitors table
+                const visitors = a.recentVisitors || [];
+                const tbody = document.getElementById('visitorsBody');
+                if (visitors.length === 0) {
+                    tbody.innerHTML = '<tr><td colspan="7" style="text-align:center;color:var(--dim);padding:30px;">No visitor data yet.</td></tr>';
+                } else {
+                    const deviceIcons = { 'Mobile': 'fa-mobile-alt', 'Tablet': 'fa-tablet-alt', 'Desktop': 'fa-desktop' };
+                    const browserIcons = { 'Chrome': 'fa-brands fa-chrome', 'Firefox': 'fa-brands fa-firefox-browser', 'Safari': 'fa-brands fa-safari', 'Edge': 'fa-brands fa-edge', 'Opera': 'fa-brands fa-opera' };
+                    const osIcons = { 'Windows 10/11': 'fa-brands fa-windows', 'Windows': 'fa-brands fa-windows', 'macOS': 'fa-brands fa-apple', 'iOS': 'fa-brands fa-apple', 'Android': 'fa-brands fa-android', 'Linux': 'fa-brands fa-linux', 'Chrome OS': 'fa-brands fa-chrome' };
+                    tbody.innerHTML = visitors.map(v => {
+                        const devIcon = deviceIcons[v.device] || 'fa-desktop';
+                        const brIcon = browserIcons[v.browser] || 'fa-globe';
+                        const osIcon = osIcons[v.os] || 'fa-question-circle';
+                        const ref = v.referrer === 'direct' || !v.referrer ? '<span style="color:var(--dim);">direct</span>' : escapeHtml(v.referrer.length > 25 ? v.referrer.substring(0, 25) + '...' : v.referrer);
+                        const ago = v.timestamp ? formatDate(v.timestamp) : '—';
+                        return `<tr>
+                            <td><code style="background:var(--bg);padding:4px 8px;border-radius:6px;font-size:0.78rem;color:var(--accent2);">${escapeHtml(v.ip)}</code></td>
+                            <td><i class="fas ${devIcon}" style="color:var(--accent);margin-right:6px;"></i>${escapeHtml(v.device)}</td>
+                            <td><i class="${brIcon}" style="color:var(--accent2);margin-right:6px;"></i>${escapeHtml(v.browser)}</td>
+                            <td><i class="${osIcon}" style="color:var(--dim);margin-right:6px;"></i>${escapeHtml(v.os)}</td>
+                            <td style="color:var(--dim);font-size:0.82rem;">${escapeHtml(v.page)}</td>
+                            <td style="font-size:0.82rem;">${ref}</td>
+                            <td class="td-date">${ago}</td>
+                        </tr>`;
+                    }).join('');
+                }
             } catch (err) { console.error('Failed to load analytics:', err); }
         }
 

@@ -508,12 +508,60 @@ class JsonDatabase {
             viewsByDay.push({ date: dateStr, count });
         }
 
+        // Recent visitors (last 100, with parsed device info)
+        const recentVisitors = views.slice(-100).reverse().map(v => {
+            const ua = v.user_agent || '';
+            let browser = 'Unknown', os = 'Unknown', device = 'Desktop';
+
+            // Browser detection
+            if (/edg\//i.test(ua)) browser = 'Edge';
+            else if (/opr\//i.test(ua) || /opera/i.test(ua)) browser = 'Opera';
+            else if (/firefox|fxios/i.test(ua)) browser = 'Firefox';
+            else if (/chrome|crios/i.test(ua)) browser = 'Chrome';
+            else if (/safari/i.test(ua)) browser = 'Safari';
+
+            // OS detection
+            if (/windows nt 10/i.test(ua)) os = 'Windows 10/11';
+            else if (/windows/i.test(ua)) os = 'Windows';
+            else if (/mac os x/i.test(ua)) os = 'macOS';
+            else if (/android/i.test(ua)) os = 'Android';
+            else if (/iphone|ipad|ipod/i.test(ua)) os = 'iOS';
+            else if (/linux/i.test(ua)) os = 'Linux';
+            else if (/cros/i.test(ua)) os = 'Chrome OS';
+
+            // Device type
+            if (/android|webos|iphone|ipad|ipod|blackberry|iemobile|opera mini|mobile/i.test(ua)) {
+                device = /ipad|tablet/i.test(ua) ? 'Tablet' : 'Mobile';
+            }
+
+            return {
+                ip: v.ip_address || 'unknown',
+                page: v.page || '/',
+                browser,
+                os,
+                device,
+                referrer: v.referrer || 'direct',
+                timestamp: v.created_at
+            };
+        });
+
+        // Unique IPs today
+        const todayStr = now.toISOString().split('T')[0];
+        const todayViews = views.filter(v => (v.created_at || '').startsWith(todayStr));
+        const uniqueIpsToday = new Set(todayViews.map(v => v.ip_address || 'unknown')).size;
+        const totalUniqueIps = new Set(views.map(v => v.ip_address || 'unknown')).size;
+
         return {
+            totalViews: views.length,
+            todayViews: todayViews.length,
             referrerBreakdown,
             browserBreakdown,
             deviceBreakdown,
             hourlyTraffic,
-            viewsByDay
+            viewsByDay,
+            recentVisitors,
+            uniqueIpsToday,
+            totalUniqueIps
         };
     }
 
